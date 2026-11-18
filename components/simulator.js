@@ -146,4 +146,170 @@ function draw3d(dt,t,cv,v){
  box(0,0,-3,.18,2.2,.18,'#28527e','#1b3a5e','#1b3a5e');box(0,0,3,.18,2.2,.18,'#28527e','#1b3a5e','#1b3a5e');
  quad([[-.1,2.2,-3],[.1,2.2,-3],[.1,2.2,3],[-.1,2.2,3]],'#28527e');
  const irOn=S.source==='ir'&&S.on&&s.heaterActive&&!s.done;
- [-1.2,0,1
+ [-1.2,0,1.2].forEach(x=>{box(x,1.95,0,.22,.12,4.6,irOn?'#FF762E':'#5a3a28',irOn?'#e8452e':'#4a3020',irOn?'#e8452e':'#4a3020');});
+ // rack solar
+ const solOn=S.source==='solar';
+ for(let i=0;i<3;i++){const x=-6.3,z=-1.6+i*1.6;
+  quad([[x-.7,.9,z-.6],[x+.7,1.5,z-.6],[x+.7,1.5,z+.6],[x-.7,.9,z+.6]],solOn&&!night?'#1d5fa8':'#123a6e');
+  box(x,0,z,1.4,.5,1.2,'#28527e','#1b3a5e','#1b3a5e');}
+ // bomba de calor
+ const hpOn=S.source==='hp'&&S.on&&s.heaterActive&&!s.done;
+ box(6.2,0,-1.5,1.6,1.1,1.2,'#28527e','#1b3a5e',hpOn?'#155a8a':'#1b3a5e');
+ // casa de bombas
+ box(6.2,0,1.8,1.1,.7,1,'#28527e','#1b3a5e','#155a8a');
+ // rolo da cobertura
+ box(5.5,0,0,.3,.3,5.2,'#7ec8ff','#4a90c8','#4a90c8');
+ // ordena e desenha
+ polys.sort((a,b)=>b.z-a.z);
+ polys.forEach(pl=>{c.globalAlpha=pl.alpha;c.fillStyle=pl.fill;c.beginPath();
+  pl.pr.forEach((p,i)=>{i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y)});c.closePath();c.fill();});
+ c.globalAlpha=1;
+ // feixes IR aditivos
+ if(irOn){const pw=TL.clamp(S.P/200,.2,1);
+  [-1.2,0,1.2].forEach(x=>{const a=P(x,2,0),b=P(x,wy,-2.2),d=P(x,wy,2.2);
+   const g=c.createLinearGradient(a.x,a.y,(b.x+d.x)/2,(b.y+d.y)/2);
+   g.addColorStop(0,'rgba(255,150,46,'+(.4*pw)+')');g.addColorStop(1,'rgba(255,150,46,.03)');
+   c.fillStyle=g;c.beginPath();c.moveTo(a.x-8,a.y);c.lineTo(a.x+8,a.y);c.lineTo(d.x+14,d.y);c.lineTo(b.x-14,b.y);c.closePath();c.fill();});
+  const gl=P(0,2,0);c.save();c.shadowColor='#FF762E';c.shadowBlur=26;c.fillStyle='rgba(255,150,46,.5)';c.fillRect(gl.x-40,gl.y-4,80,6);c.restore();}
+ // ventilador da bomba de calor
+ if(S.source==='hp'){const f=P(6.2,.6,-.88);c.strokeStyle='#7ef0ff';c.lineWidth=2;
+  c.beginPath();c.arc(f.x,f.y,12*f.s/40,0,7);c.stroke();
+  const rot=hpOn&&TL.A11y.motion?t*6:0;
+  for(let i=0;i<3;i++){const a=rot+i*2.09;c.beginPath();c.moveTo(f.x,f.y);
+   c.lineTo(f.x+Math.cos(a)*10*f.s/40,f.y+Math.sin(a)*10*f.s/40);c.stroke();}}
+ // vapor / shimmer
+ if(TL.A11y.motion){const evap=s.lastL.evap/1000,n=Math.min(24,Math.round(evap/4));
+  for(let i=0;i<n;i++){const ph=(t*.3+i*.13)%1,x=TL.lerp(-4,4,(i*.618)%1);
+   const p=P(x+Math.sin(t+i)*.3,wy+ph*1.6,((i*.37)%1)*4-2);
+   c.fillStyle='rgba(200,230,255,'+(1-ph)*.3+')';c.beginPath();c.arc(p.x,p.y,2+ph*4,0,7);c.fill();}}
+ // sensores + tags
+ const sw=P(-4.6,wy+.1,2.2),sa=P(5.8,1.3,-3.2);
+ [[sw,TL.fmt(s.Tw,1)+'°'],[sa,TL.fmt(S.Tair,0)+'° ar']].forEach(([p,txt],i)=>{
+  c.fillStyle=(t%1<.5||!TL.A11y.motion)?'#25D6A4':'#1a8a6a';c.beginPath();c.arc(p.x,p.y,4,0,7);c.fill();
+  c.fillStyle='rgba(6,20,38,.85)';const tw=c.measureText(txt).width+12;
+  c.fillRect(p.x+8,p.y-18,tw,16);c.strokeStyle='rgba(37,214,164,.6)';c.strokeRect(p.x+8,p.y-18,tw,16);
+  c.fillStyle='#7ef0ff';c.font='10px JetBrains Mono,monospace';c.textAlign='left';c.fillText(txt,p.x+14,p.y-6);});
+ // hit regions (screen-space)
+ BIG.hits=[['agua',[P(-5,wy,-2.5),P(5,wy,-2.5),P(5,wy,2.5),P(-5,wy,2.5)]],
+  ['ir',[P(-1.5,2.3,-2.4),P(1.5,2.3,-2.4),P(1.5,1.8,2.4),P(-1.5,1.8,2.4)]],
+  ['solar',[P(-7,1.6,-2.4),P(-5.5,1.6,-2.4),P(-5.5,.8,2.4),P(-7,.8,2.4)]],
+  ['hp',[P(5.4,1.2,-2.1),P(7,1.2,-2.1),P(7,0,-.9),P(5.4,0,-.9)]],
+  ['pump',[P(5.6,.8,1.3),P(6.8,.8,1.3),P(6.8,0,2.3),P(5.6,0,2.3)]],
+  ['cover',[P(5.2,.4,-2.6),P(5.8,.4,-2.6),P(5.8,0,2.6),P(5.2,0,2.6)]],
+  ['sens',[{x:sw.x-10,y:sw.y-10},{x:sw.x+10,y:sw.y-10},{x:sw.x+10,y:sw.y+10},{x:sw.x-10,y:sw.y+10}]]];
+ // destaque seleção/hover
+ const hl=BIG.hover||BIG.sel;
+ if(hl){const hit=BIG.hits.find(h=>h[0]===hl);
+  if(hit){c.strokeStyle='rgba(255,200,87,.9)';c.lineWidth=2;c.setLineDash([6,4]);c.beginPath();
+   hit[1].forEach((p,i)=>{i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y)});c.closePath();c.stroke();c.setLineDash([]);}}
+ // HUD relógio
+ c.fillStyle='rgba(6,20,38,.7)';c.fillRect(10,10,118,24);
+ c.fillStyle='#7ef0ff';c.font='11px JetBrains Mono,monospace';c.textAlign='left';
+ const hh=Math.floor(clock),mm=Math.floor((clock-hh)*60);
+ c.fillText((night?'🌙':'☀')+' '+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+' · '+TL.fmt(S.Tair,0)+'°C ar',18,26);}
+function pointInPoly(x,y,pts){let inside=false;
+ for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+  if(((pts[i].y>y)!==(pts[j].y>y))&&(x<(pts[j].x-pts[i].x)*(y-pts[i].y)/(pts[j].y-pts[i].y)+pts[i].x))inside=!inside;}
+ return inside;}
+/* ---- cenários ✔ (curvas verificadas) ---- */
+const SCEN=[
+ ['none','1 · Sem aquecimento',{source:'none',cover:false}],
+ ['ir','2 · Infravermelho 150 kW',{source:'ir',P:150,dist:.8,cover:false}],
+ ['solar','3 · Solar térmico 200 m²',{source:'solar',areaCol:200,cover:false}],
+ ['hp','4 · Bomba de calor 50 kW',{source:'hp',P:50,cover:false}],
+ ['hpc','5 · Bomba + cobertura',{source:'hp',P:50,cover:true}]];
+function applyScenario(id){const sc=SCEN.find(s=>s[0]===id);if(!sc)return;
+ Object.assign(S,sc[2]);S.on=true;BIG.scenario=id;
+ BIG.h.src.set(S.source,true);BIG.h.on.set(true,true);
+ BIG.h.P.set(S.P||150,true);BIG.h.col.set(S.areaCol||200,true);BIG.h.dist.set(S.dist||.8,true);
+ BIG.h.cover.set(!!S.cover,true);syncSourceUI();
+ TL.$$('#sc-chips button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sc===id)));
+ reset();BIG.running=true;TL.el('pool-play').textContent='⏸ Pausar';
+ TL.Sound.play('power');TL.toast('Cenário: '+sc[1],'info',2400);}
+function syncSourceUI(){
+ BIG.gIr.hidden=S.source!=='ir';BIG.gSol.hidden=S.source!=='solar';BIG.gHp.hidden=S.source!=='hp';}
+function compare(){
+ const base=cfg();const names=['Sem aquecimento','IR 150 kW','Solar 200 m²','Bomba de calor 50 kW','Bomba + cobertura'];
+ const cols=['#9FB9D8','#FF762E','#FFC857','#39DDF2','#25D6A4'];
+ SCEN.forEach((sc,i)=>{const c2=Object.assign({},base,sc[2],{on:true,period:'cycle'});
+  const sim=new TL.PoolSim(c2);sim.coverF=c2.cover?1:0;sim.run(72,60);
+  BIG.chart.setSeries('sc'+i,names[i],cols[i],sim.hist.slice(),i===0?[5,4]:undefined);});
+ TL.toast('5 cenários comparados em 72 h (ciclo dia/noite, condições atuais)','ok');TL.Sound.play('ok');}
+TL.modules.push(function(){
+ const cv=TL.el('pool-cv');if(!cv)return;
+ // chips
+ SCEN.forEach(sc=>{const b=document.createElement('button');b.type='button';b.dataset.sc=sc[0];
+  b.setAttribute('aria-pressed','false');b.textContent=sc[1];
+  b.addEventListener('click',()=>applyScenario(sc[0]));TL.el('sc-chips').appendChild(b);});
+ // controles
+ const ctl=TL.el('pool-ctl');BIG.h={};
+ BIG.h.src=TL.makeSelect(ctl,{label:'Fonte de aquecimento',options:[['none','Nenhuma'],['ir','Infravermelho direto'],['solar','Solar térmico'],['hp','Bomba de calor']],val:S.source,
+  onchange:v=>{S.source=v;syncSourceUI();BIG.scenario=null;TL.$$('#sc-chips button').forEach(b=>b.setAttribute('aria-pressed','false'));reset()}});
+ BIG.h.on=TL.makeToggle(ctl,{label:'Equipamento ligado',ico:'bolt',val:true,onchange:v=>{S.on=v;TL.Sound.play(v?'power':'off')}});
+ BIG.gIr=document.createElement('div');ctl.appendChild(BIG.gIr);
+ BIG.h.P=TL.makeRange(BIG.gIr,{label:'Potência elétrica IR',min:10,max:200,step:5,val:S.P,unit:'kW',dec:0,color:'var(--orange)',oninput:v=>S.P=v});
+ BIG.h.dist=TL.makeRange(BIG.gIr,{label:'Distância emissor → água',min:.5,max:3,step:.05,val:S.dist,unit:'m',dec:2,color:'var(--yellow)',oninput:v=>S.dist=v});
+ BIG.gSol=document.createElement('div');ctl.appendChild(BIG.gSol);
+ BIG.h.col=TL.makeRange(BIG.gSol,{label:'Área de coletores',min:20,max:240,step:5,val:S.areaCol,unit:'m²',dec:0,color:'var(--yellow)',oninput:v=>S.areaCol=v});
+ BIG.gHp=document.createElement('div');ctl.appendChild(BIG.gHp);
+ BIG.h.Php=TL.makeRange(BIG.gHp,{label:'Potência elétrica da bomba',min:10,max:80,step:2,val:50,unit:'kW',dec:0,color:'var(--cyan)',oninput:v=>S.P=v});
+ TL.makeRange(ctl,{label:'T inicial da água (reinicia)',min:10,max:35,step:.5,val:S.T0,unit:'°C',color:'var(--cyan)',oninput:v=>{S.T0=v;reset()}});
+ TL.makeRange(ctl,{label:'Termostato (T alvo)',min:22,max:32,step:.5,val:S.target,unit:'°C',color:'var(--teal)',oninput:v=>S.target=v});
+ BIG.h.cover=TL.makeToggle(ctl,{label:'Cobertura térmica',ico:'layers',val:false,onchange:v=>S.cover=v});
+ TL.makeToggle(ctl,{label:'Isolamento paredes/fundo',ico:'shield',cool:true,val:true,onchange:v=>S.insulated=v});
+ TL.makeRange(ctl,{label:'Temperatura do ar',min:-2,max:35,step:.5,val:S.Tair,unit:'°C',color:'var(--blue)',oninput:v=>S.Tair=v});
+ TL.makeRange(ctl,{label:'Vento',min:0,max:8,step:.1,val:S.wind,unit:'m/s',oninput:v=>S.wind=v});
+ TL.makeRange(ctl,{label:'Umidade relativa',min:30,max:95,step:1,val:S.rh,unit:'%',dec:0,oninput:v=>S.rh=v});
+ TL.makeSelect(ctl,{label:'Período',options:[['cycle','Ciclo 24 h (início 8 h)'],['day','Dia fixo'],['night','Noite fixa']],val:'cycle',onchange:v=>S.period=v});
+ TL.makeSelect(ctl,{label:'Velocidade da simulação',options:[[5,'1 s = 5 min'],[15,'1 s = 15 min'],[60,'1 s = 1 h'],[180,'1 s = 3 h']],val:60,onchange:v=>S.speed=+v});
+ TL.makeToggle(ctl,{label:'Visão térmica (câmera IR)',ico:'camera',cool:true,val:false,onchange:v=>S.thermal=v});
+ syncSourceUI();
+ // botões
+ TL.el('pool-play').addEventListener('click',()=>{if(BIG.sim.done){TL.toast('Limite de 96 h atingido — reinicie a simulação','warn');return}
+  BIG.running=!BIG.running;TL.el('pool-play').textContent=BIG.running?'⏸ Pausar':'▶ Retomar';TL.Sound.play(BIG.running?'on':'off')});
+ TL.el('pool-reset').addEventListener('click',()=>{reset();BIG.running=true;TL.el('pool-play').textContent='⏸ Pausar';TL.Sound.play('power')});
+ TL.el('pool-view').addEventListener('click',()=>{cam.th=-.65;cam.ph=.52;cam.R=17;cam.lastUser=performance.now()/1000;TL.Sound.play('click')});
+ TL.el('pool-save').addEventListener('click',()=>{BIG.saved++;
+  const nm='Salva '+BIG.saved+' · '+(S.source==='ir'?'IR':S.source==='hp'?'BC':S.source==='solar'?'Solar':'sem')+(S.cover?'+capa':'');
+  BIG.chart.setSeries('sv'+BIG.saved,nm,TL.CHART_COLORS[(BIG.saved+1)%8],BIG.sim.hist.slice());
+  if(BIG.saved>6){BIG.chart.o.series=BIG.chart.o.series.filter(s=>s.id!=='sv'+(BIG.saved-6));BIG.chart.buildLegend()}
+  TL.toast('Curva salva no gráfico ✔','ok');TL.Sound.play('ok')});
+ TL.el('pool-compare').addEventListener('click',compare);
+ TL.el('pool-clear').addEventListener('click',()=>{BIG.chart.clearAll(true);BIG.saved=0;TL.toast('Gráfico limpo (curva ao vivo mantida)','info',2000)});
+ // legenda
+ [['agua','Água'],['ir','Emissores IR'],['solar','Coletores solares'],['hp','Bomba de calor'],['pump','Circulação'],['cover','Cobertura'],['sens','Sensores']].forEach(([id,n])=>{
+  const b=document.createElement('button');b.type='button';b.dataset.part=id;b.setAttribute('aria-pressed','false');b.textContent=n;
+  b.addEventListener('click',()=>selectPart(id));TL.el('pool-legend').appendChild(b);});
+ selectPart(null);BIG.sel=null;
+ TL.el('pool-info').innerHTML='Clique num elemento da cena (ou na legenda) para inspecioná-lo. Arraste para girar · role/pince para zoom.';
+ // interação de câmera
+ const ptrs=new Map();let pinch0=0;
+ cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  cv.classList.add('drag');cam.lastUser=performance.now()/1000;
+  if(ptrs.size===2){const a=[...ptrs.values()];pinch0=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}});
+ cv.addEventListener('pointermove',e=>{
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(ptrs.has(e.pointerId)){const p=ptrs.get(e.pointerId);
+   if(ptrs.size===1){cam.orbit(e.clientX-p.x,e.clientY-p.y);p.x=e.clientX;p.y=e.clientY;cam.lastUser=performance.now()/1000;}
+   else if(ptrs.size===2){p.x=e.clientX;p.y=e.clientY;const a=[...ptrs.values()];
+    const d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);cam.zoom((pinch0-d)*.03);pinch0=d;}}
+  else if(BIG.hits){BIG.hover=null;
+   for(const h of BIG.hits)if(pointInPoly(mx,my,h[1])){BIG.hover=h[0];break}
+   cv.style.cursor=BIG.hover?'pointer':'grab';}});
+ const up=e=>{if(ptrs.has(e.pointerId)&&ptrs.size===1&&!cv.classList.contains('moved')){
+   const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+   if(BIG.hits)for(const h of BIG.hits)if(pointInPoly(mx,my,h[1])){selectPart(h[0]);break}}
+  ptrs.delete(e.pointerId);cv.classList.remove('drag')};
+ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+ cv.addEventListener('wheel',e=>{e.preventDefault();cam.zoom(e.deltaY*.01);cam.lastUser=performance.now()/1000},{passive:false});
+ // gráfico + stats
+ BIG.chart=new TL.LineChart(TL.el('pool-chart'),{aria:'Temperatura da piscina versus tempo em horas, com cenários comparados e faixa de conforto',
+  fmtX:v=>TL.fmt(v,0)+' h',fmtY:v=>TL.fmt(v,1)+' °C',yMin:10,yMax:30,
+  bands:[{y0:26,y1:28,color:'rgba(37,214,164,.13)',label:'conforto 26–28 °C'}],empty:'Inicie a simulação ou compare cenários…'});
+ TL.Charts.push({tab:'simulador',chart:BIG.chart});
+ TL.statGrid(TL.el('pool-stats'),[{id:'ps-el',label:'eletricidade consumida',kind:'hot'},{id:'ps-th',label:'calor entregue',kind:'ok'},{id:'ps-cost',label:'custo acumulado',kind:'vio'},{id:'ps-eff',label:'eficiência atual'}]);
+ TL.Engine.add({el:cv,tab:'simulador',sim:true,draw(dt,t,v){draw3d(dt,t,cv,v)}});
+ reset();
+ TL.$$('#sc-chips button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sc==='ir')));
+});
+})();
