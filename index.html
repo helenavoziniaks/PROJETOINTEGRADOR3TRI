@@ -732,4 +732,608 @@ footer nav a:hover{color:var(--cyan)}
           <p class="note info" style="margin-top:.9rem">Neste projeto, a piscina é modelada como <b>semiolímpica hipotética de 25 × 12,5 × 1,4 m (437,5 m³)</b>. Você pode editar tudo no <button type="button" class="btn sm ghost" data-go="laboratorio" style="display:inline-flex">Laboratório</button></p>
         </div>
         <div class="card">
-          <h3 data-ico="chart">Clima de Curitiba × conforto da
+          <h3 data-ico="chart">Clima de Curitiba × conforto da água</h3>
+          <div id="clim-chart"></div>
+          <div id="clim-toggle" style="max-width:330px"></div>
+          <p style="font-size:.7rem;color:var(--faint);margin-top:.4rem">Normais climatológicas aproximadas (INMET). “Piscina sem aquecimento” é estimativa hipotética ≈ média + 1,5 °C. A faixa 26–28 °C segue referência de piscinas de prática esportiva.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk reveal">
+      <p class="kicker">Por que aquecer?</p>
+      <h3>Água na temperatura certa muda tudo</h3>
+      <div class="grid3" id="why-grid"></div>
+      <div class="card" style="margin-top:1rem">
+        <h3 data-ico="thermo">Termômetro da prática esportiva</h3>
+        <div class="grid2" style="align-items:center">
+          <div>
+            <div id="cg-ctl"></div>
+            <div style="height:18px;border-radius:9px;border:1px solid var(--line);position:relative;background:linear-gradient(90deg,#2f6fd4 0%,#2f9dff 30%,#1fc8a9 48%,#3ddc97 56%,#ffb020 70%,#ff4b2e 100%);margin-top:.6rem" aria-hidden="true">
+              <span id="cg-marker" style="position:absolute;top:-7px;width:4px;height:30px;background:#fff;border-radius:3px;box-shadow:0 0 10px #fff;left:33%"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.62rem;color:var(--faint);margin-top:.3rem"><span>16 °C</span><span>26–28 ideal</span><span>34 °C</span></div>
+          </div>
+          <p class="note" id="cg-out" aria-live="polite" style="margin:0"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- diagrama da proposta -->
+    <section class="blk reveal" id="dg-blk">
+      <p class="kicker">Proposta conceitual · diagrama interativo</p>
+      <h3>Como seria um sistema de aquecimento por infravermelho</h3>
+      <p class="lead" style="font-size:.92rem">Clique nos números do diagrama (ou na legenda) para entender cada componente. As linhas animadas mostram o caminho da energia.</p>
+      <p class="ez">O desenho mostra a ideia: energia elétrica → emissores → água → circulação → sensores que controlam tudo.</p>
+      <div class="grid2" style="align-items:start;margin-top:.9rem;grid-template-columns:1.6fr 1fr">
+        <div class="stage">
+          <div class="stage-head"><span class="dot"></span>CEP · corte do natatório (conceito)<span class="sp"></span><span class="badge-hyp">teórico</span></div>
+          <svg id="dg-svg" viewBox="0 0 920 440" style="width:100%;display:block;background:linear-gradient(180deg,#081c34,#050f20)" role="img" aria-label="Diagrama em corte da piscina com fonte de energia, emissores infravermelhos, superfície da água, absorção, circulação, isolamento, sensores e controlador">
+            <defs>
+              <linearGradient id="dgw" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#2f9dff" stop-opacity=".8"/><stop offset="1" stop-color="#0d3a6e"/></linearGradient>
+              <linearGradient id="dgpv" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#123a6e"/><stop offset="1" stop-color="#1d5fa8"/></linearGradient>
+            </defs>
+            <!-- estrutura -->
+            <path d="M40 130 L460 40 L880 130" fill="none" stroke="#28527e" stroke-width="5"/>
+            <line x1="40" y1="130" x2="40" y2="400" stroke="#28527e" stroke-width="5"/><line x1="880" y1="130" x2="880" y2="400" stroke="#28527e" stroke-width="5"/>
+            <line x1="20" y1="400" x2="900" y2="400" stroke="#28527e" stroke-width="6"/>
+            <!-- 1 fonte -->
+            <g class="part" data-part="fonte"><title>Fonte de energia: painéis fotovoltaicos e quadro elétrico</title>
+              <g class="glowable"><rect x="120" y="72" width="70" height="26" rx="3" fill="url(#dgpv)" stroke="#38e1ff" transform="rotate(-12 155 85)"/><rect x="205" y="55" width="70" height="26" rx="3" fill="url(#dgpv)" stroke="#38e1ff" transform="rotate(-12 240 68)"/>
+              <rect x="62" y="180" width="52" height="72" rx="6" fill="#123156" stroke="#38e1ff"/><path d="M84 196l-8 20h12l-8 20" stroke="#ffb020" stroke-width="3" fill="none"/></g>
+              <path d="M160 100 C 120 130, 95 150, 88 180" stroke="#ffb020" stroke-width="2.5" fill="none" class="flowline"/>
+              <g class="hotspot" data-part="fonte" tabindex="0" role="button" aria-label="Elemento 1: fonte de energia"><circle class="bn" cx="88" cy="160" r="13"/><text x="88" y="164" text-anchor="middle">1</text></g>
+            </g>
+            <!-- 2 emissores -->
+            <g class="part" data-part="emissores"><title>Emissores infravermelhos suspensos</title>
+              <line x1="330" y1="96" x2="330" y2="130" stroke="#28527e" stroke-width="3"/><line x1="590" y1="96" x2="590" y2="130" stroke="#28527e" stroke-width="3"/>
+              <g class="glowable"><rect x="310" y="128" width="300" height="13" rx="6" fill="#ff7a1c" stroke="#ffb020"/><rect x="350" y="150" width="220" height="10" rx="5" fill="#e8452e" stroke="#ffb020" stroke-opacity=".6"/></g>
+              <path d="M114 216 C 200 200, 260 160, 330 140" stroke="#ffb020" stroke-width="2.5" fill="none" class="flowline"/>
+              <g class="hotspot" data-part="emissores" tabindex="0" role="button" aria-label="Elemento 2: emissores infravermelhos"><circle class="bn" cx="460" cy="120" r="13"/><text x="460" y="124" text-anchor="middle">2</text></g>
+            </g>
+            <!-- 3 superficie + raios -->
+            <g class="part" data-part="superficie"><title>Superfície da água recebendo radiação</title>
+              <g stroke="#ff9a3d" stroke-width="2.5" class="flowline"><path d="M360 165 L340 248"/><path d="M460 165 L460 248"/><path d="M560 165 L580 248"/></g>
+              <line x1="250" y1="250" x2="700" y2="250" stroke="#7ef0ff" stroke-width="3.5" class="glowable"/>
+              <g class="hotspot" data-part="superficie" tabindex="0" role="button" aria-label="Elemento 3: superfície da água"><circle class="bn" cx="285" cy="236" r="13"/><text x="285" y="240" text-anchor="middle">3</text></g>
+            </g>
+            <!-- 4 absorção -->
+            <g class="part" data-part="absorcao"><title>Absorção de energia na lâmina d'água e placa absorvedora</title>
+              <ellipse cx="460" cy="256" rx="180" ry="10" fill="#ff9a3d" opacity=".4" class="glowable"/>
+              <rect x="690" y="252" width="12" height="96" fill="#1a1a1a" stroke="#ff7a1c" stroke-width="2" class="glowable"/>
+              <rect x="250" y="250" width="450" height="106" fill="url(#dgw)"/>
+              <g class="hotspot" data-part="absorcao" tabindex="0" role="button" aria-label="Elemento 4: absorção de energia"><circle class="bn" cx="662" cy="286" r="13"/><text x="662" y="290" text-anchor="middle">4</text></g>
+            </g>
+            <!-- 5 circulação -->
+            <g class="part" data-part="circulacao"><title>Bomba e circulação distribuem o calor</title>
+              <path d="M700 330 L780 330 L780 300" stroke="#38e1ff" stroke-width="4" fill="none" class="flowline"/>
+              <path d="M780 268 L780 256 L706 256" stroke="#38e1ff" stroke-width="4" fill="none" class="flowline"/>
+              <circle cx="780" cy="284" r="17" fill="#123156" stroke="#38e1ff" stroke-width="2.5" class="glowable"/><path d="M772 284a8 8 0 1 1 8 8" stroke="#7ef0ff" stroke-width="2.5" fill="none"/>
+              <g stroke="#38e1ff" stroke-width="2" fill="none" class="flowline"><path d="M320 336 C 320 306, 400 306, 400 336"/><path d="M480 336 C 480 306, 560 306, 560 336"/></g>
+              <g class="hotspot" data-part="circulacao" tabindex="0" role="button" aria-label="Elemento 5: circulação e distribuição de calor"><circle class="bn" cx="812" cy="284" r="13"/><text x="812" y="288" text-anchor="middle">5</text></g>
+            </g>
+            <!-- 6 isolamento -->
+            <g class="part" data-part="isolamento"><title>Isolamento térmico e cobertura noturna</title>
+              <g class="glowable"><rect x="238" y="356" width="474" height="14" fill="none" stroke="#ffb020" stroke-width="2" stroke-dasharray="8 5"/><rect x="238" y="250" width="12" height="106" fill="none" stroke="#ffb020" stroke-width="2" stroke-dasharray="8 5"/><rect x="700" y="250" width="12" height="106" fill="none" stroke="#ffb020" stroke-width="2" stroke-dasharray="8 5"/></g>
+              <circle cx="245" cy="243" r="9" fill="#7ec8ff" stroke="#fff" stroke-opacity=".6"/><text x="245" y="228" text-anchor="middle" fill="#7ec8ff" font-family="IBM Plex Mono,monospace" font-size="9">cobertura</text>
+              <g class="hotspot" data-part="isolamento" tabindex="0" role="button" aria-label="Elemento 6: isolamento térmico"><circle class="bn" cx="460" cy="384" r="13"/><text x="460" y="388" text-anchor="middle">6</text></g>
+            </g>
+            <!-- 7 sensores -->
+            <g class="part" data-part="sensores"><title>Sensores de temperatura na água e no ar</title>
+              <g class="glowable"><rect x="352" y="292" width="7" height="26" rx="3" fill="#3ddc97"/><circle cx="355.5" cy="290" r="4" fill="#3ddc97"/><rect x="216" y="150" width="7" height="22" rx="3" fill="#3ddc97"/><circle cx="219.5" cy="148" r="4" fill="#3ddc97"/></g>
+              <path d="M352 300 C 260 300, 200 260, 160 240" stroke="#3ddc97" stroke-width="1.8" stroke-dasharray="3 4" fill="none"/>
+              <path d="M216 162 C 190 180, 170 200, 150 216" stroke="#3ddc97" stroke-width="1.8" stroke-dasharray="3 4" fill="none"/>
+              <g class="hotspot" data-part="sensores" tabindex="0" role="button" aria-label="Elemento 7: sensores de temperatura"><circle class="bn" cx="320" cy="300" r="13"/><text x="320" y="304" text-anchor="middle">7</text></g>
+            </g>
+            <!-- 8 controlador -->
+            <g class="part" data-part="controlador"><title>Controlador com termostato</title>
+              <g class="glowable"><rect x="104" y="216" width="76" height="48" rx="8" fill="#123156" stroke="#3ddc97" stroke-width="2"/><text x="142" y="238" text-anchor="middle" fill="#7ef0ff" font-family="IBM Plex Mono,monospace" font-size="13">27,0°</text><text x="142" y="254" text-anchor="middle" fill="#3ddc97" font-family="IBM Plex Mono,monospace" font-size="8">SETPOINT</text></g>
+              <path d="M180 232 C 240 210, 280 170, 320 146" stroke="#3ddc97" stroke-width="1.8" stroke-dasharray="3 4" fill="none"/>
+              <g class="hotspot" data-part="controlador" tabindex="0" role="button" aria-label="Elemento 8: controlador e termostato"><circle class="bn" cx="142" cy="282" r="13"/><text x="142" y="286" text-anchor="middle">8</text></g>
+            </g>
+          </svg>
+          <div class="dg-legend" id="dg-legend" role="group" aria-label="Legenda do diagrama"></div>
+        </div>
+        <div class="card" id="dg-detail" style="position:sticky;top:calc(var(--nav-h) + 12px)" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="blk reveal">
+      <div class="note danger" style="border-left-width:5px">
+        <h3 style="color:var(--red);display:flex;gap:.5rem;align-items:center" data-ico="warn">Proposta teórica ≠ instalação comprovadamente viável</h3>
+        <p style="margin-top:.4rem">Este site apresenta um <b>conceito didático</b>. O aquecimento <b>direto</b> da água por infravermelho depende de: <b>absorção</b> (IR distante é absorvido na superfície, favorecendo evaporação), <b>distância</b> (a irradiância cai com o afastamento), <b>geometria</b> (fração da radiação que realmente atinge a lâmina d'água) e <b>perdas térmicas</b> (que podem superar a potência entregue). Uma instalação real exigiria estudo de engenharia: demanda elétrica contratada, proteções e distâncias de segurança perto da água (NR-10, NBR 5410), custos, manutenção e licenças. Nada aqui é medição ou projeto executivo.</p>
+      </div>
+      <h3 style="margin-top:1.4rem">Comparando caminhos possíveis</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Tecnologia</th><th>Como funciona</th><th>Eficiência típica</th><th>Operação</th><th>Limitações</th></tr></thead>
+        <tbody>
+          <tr><td><b>IR resistivo direto</b></td><td>Emissores elétricos irradiam a superfície / placas absorvedoras</td><td>~90–95% na conversão elétrica→térmica</td><td>Eletricidade integral: caro por kWh térmico</td><td>Perdas por evaporação; geometria; demanda elétrica alta</td></tr>
+          <tr><td><b>Solar térmico</b></td><td>Coletores escuros aquecem água em circuito fechado</td><td>40–70% da insolação captada</td><td>Quase zero (só bombeamento)</td><td>Depende do sol; precisa de área ≈ 50–80% da piscina; apoio noturno</td></tr>
+          <tr><td><b>Bomba de calor</b></td><td>“Bombeia” calor do ar para a água (ciclo de refrigeração)</td><td>COP 3–6 (300–600% em relação à eletricidade)</td><td>A mais barata entre as elétricas</td><td>Investimento inicial alto; desempenho cai no frio; aquecimento mais lento</td></tr>
+          <tr><td><b>Gás</b></td><td>Queimador aquece trocador de calor</td><td>~80–90%</td><td>Preço do gás; emissões de CO₂</td><td>Ventilação, segurança e armazenamento</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note info deep"><b>Leitura crítica:</b> a bomba de calor não “cria” energia — ela <b>move</b> calor do ambiente, por isso entrega mais kWh térmicos do que consome elétricos. O infravermelho resistivo é simples e limpo no ponto de uso, mas cada kWh térmico custa quase 1 kWh elétrico. Compare os custos você mesmo no <button type="button" class="btn sm ghost" data-go="laboratorio" style="display:inline-flex">Laboratório · módulo D</button></p>
+    </section>
+
+    <section class="blk reveal">
+      <p class="kicker">Realidade escolar</p>
+      <h3>Desafios energéticos e financeiros</h3>
+      <div class="grid3" id="chall-grid"></div>
+      <div class="btnrow" style="margin-top:1.2rem">
+        <button type="button" class="btn heat" data-go="simulador">Testar cenários no simulador →</button>
+        <button type="button" class="btn ghost" data-go="laboratorio">Fazer as contas no laboratório</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ ABA 4 · LABORATÓRIO ============ -->
+  <section class="panel" id="panel-laboratorio" role="tabpanel" aria-labelledby="tab-laboratorio" hidden>
+    <p class="kicker">Módulo 04 · Laboratório de cálculos</p>
+    <h2>Faça as contas da piscina</h2>
+    <p class="lead">Todos os resultados se atualizam <b style="color:var(--ink)">automaticamente</b> a cada ajuste. Os dados padrão representam uma piscina semiolímpica <b style="color:var(--amber)">hipotética</b> do CEP — edite à vontade.</p>
+    <p class="ez">Mude os números e veja as respostas na hora: energia, tempo, perdas e custo.</p>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.8rem">
+      <span class="badge-hyp">⚠ dados hipotéticos · editáveis</span>
+      <button type="button" class="btn sm ghost" id="lab-reset">↺ Restaurar padrão CEP</button>
+      <button type="button" class="btn sm coolb" id="lab-copy">⧉ Copiar resumo dos resultados</button>
+    </div>
+    <nav class="subnav" aria-label="Módulos do laboratório">
+      <a href="#lab-a">A · Energia (Q = m·c·ΔT)</a><a href="#lab-b">B · Potência &amp; tempo</a><a href="#lab-c">C · Perdas térmicas</a><a href="#lab-d">D · Custo energético</a>
+    </nav>
+
+    <section class="blk reveal card" id="lab-a" style="margin-top:1rem">
+      <h3 data-ico="flask">A · Energia necessária para aquecer a água</h3>
+      <div class="formula"><span class="fx">Q</span><span class="op">=</span><span class="fx">m</span><span class="op">·</span><span class="fx">c</span><span class="op">·</span><span class="fx">ΔT</span><span class="op" style="margin-left:auto;font-size:.8rem">c = 4 186 J/(kg·°C) · ρ = 1 000 kg/m³</span></div>
+      <div class="grid2" style="align-items:start">
+        <div id="lab-a-in"></div>
+        <div>
+          <div class="stats" id="lab-a-out"></div>
+          <div class="formula" id="lab-a-fx" aria-live="polite"></div>
+          <p class="note warn" id="lab-a-warn" hidden></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk reveal card" id="lab-b">
+      <h3 data-ico="bolt">B · Potência e tempo de aquecimento</h3>
+      <div class="formula"><span class="fx">P</span><span class="op">=</span><span class="frac"><span class="fx">Q</span><span class="fx">t</span></span><span class="op">⇒</span><span class="fx">t</span><span class="op">=</span><span class="frac"><span class="fx">Q</span><span class="fx">P</span><span class="op">·</span><span class="fx">η</span></span></div>
+      <div class="grid2" style="align-items:start">
+        <div id="lab-b-in"></div>
+        <div>
+          <div class="stats" id="lab-b-out"></div>
+          <div class="bars" id="lab-b-bars" aria-label="Comparação de tempos de aquecimento"></div>
+          <p class="note" id="lab-b-note" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk reveal card" id="lab-c">
+      <h3 data-ico="wind">C · Perdas térmicas da piscina</h3>
+      <p class="deep" style="font-size:.88rem;color:var(--dim)">Estimativa instantânea pelas quatro vias. A área usa as dimensões do módulo A; a cobertura reduz drasticamente a evaporação — normalmente a vilã nº 1.</p>
+      <p class="ez">A piscina perde calor de quatro jeitos. A cobertura ajuda muito a segurar o calor.</p>
+      <div class="grid2" style="align-items:start">
+        <div id="lab-c-in"></div>
+        <div>
+          <div class="bars" id="lab-c-bars" aria-label="Perdas por mecanismo"></div>
+          <div class="stats" id="lab-c-out"></div>
+          <details><summary>Fórmulas usadas nas estimativas</summary><div class="din">
+            <p><b>Evaporação:</b> ṁ ≈ A·(0,065 + 0,052·v)·Δp<sub>v</sub> [kg/h, Δp em kPa], Q = ṁ·L<sub>v</sub>/3600, L<sub>v</sub> ≈ 2,45 MJ/kg. Pressão de saturação por Magnus; UR e altitude de Curitiba (≈ 91 kPa) consideradas.</p>
+            <p><b>Convecção:</b> Q = h·A·(T<sub>água</sub>−T<sub>ar</sub>), h ≈ 5,7 + 3,8·v W/(m²·K).</p>
+            <p><b>Radiação:</b> Q = ε·σ·A·(T<sub>água</sub>⁴−T<sub>céu</sub>⁴), ε = 0,96, T<sub>céu</sub> ≈ T<sub>ar</sub>−10 K.</p>
+            <p><b>Condução:</b> Q = U·A<sub>paredes+fundo</sub>·(T<sub>água</sub>−18 °C), U ≈ 0,6 (isolada) ou 2,2 W/(m²·K).</p>
+            <p><b>Cobertura:</b> reduz evaporação em ~92% e convecção/radiação em ~75%. Correlações simplificadas com finalidade didática.</p>
+          </div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk reveal card" id="lab-d">
+      <h3 data-ico="coin">D · Custo energético e comparação de equipamentos</h3>
+      <div class="formula"><span class="fx">Custo</span><span class="op">=</span><span class="fx">E</span><span class="fm">(kWh)</span><span class="op">·</span><span class="fx">tarifa</span><span class="fm">(R$/kWh)</span></div>
+      <div id="lab-d-in" class="grid3"></div>
+      <div id="lab-d-out" style="margin-top:.8rem"></div>
+      <p class="note info" style="margin-top:.8rem"><b>Como ler:</b> “aquecer uma vez” usa o ΔT do módulo A; “manter por mês” usa as perdas do módulo C na temperatura desejada, 24 h/dia. O custo do solar refere-se ao bombeamento — a energia do Sol é gratuita, mas intermitente (fração solar anual típica de 50–70%). Tarifas e preços são <b>hipotéticos</b>.</p>
+    </section>
+  </section>
+
+  <!-- ============ ABA 5 · SIMULADOR ============ -->
+  <section class="panel" id="panel-simulador" role="tabpanel" aria-labelledby="tab-simulador" hidden>
+    <p class="kicker">Módulo 05 · Simulador da piscina escolar</p>
+    <h2>Simulador 3D da piscina</h2>
+    <div class="note warn" style="margin-top:.4rem"><b>Simulação didática.</b> Nenhum resultado aqui é medição real da piscina do CEP. Modelo físico simplificado com dados hipotéticos editáveis. <span class="deep">Arraste para girar a câmera · role/pince para zoom · clique nos equipamentos.</span></div>
+    <p class="ez">Escolha um jeito de aquecer, ligue o equipamento e veja a temperatura subir no termômetro e no gráfico.</p>
+
+    <div class="sim-grid" style="margin-top:1rem">
+      <div>
+        <div class="stage">
+          <div class="stage-head"><span class="dot"></span>SIM-02 · perspectiva<span class="sp"></span><span id="pool-status">—</span><span style="color:var(--amber)" id="pool-time">0 h</span></div>
+          <div class="stage-body r1610"><canvas id="pool-cv" role="img" aria-label="Cena 3D interativa da piscina escolar com equipamentos de aquecimento selecionáveis. Use os botões da legenda para selecionar por teclado.">Cena em perspectiva da piscina com emissores IR, coletores solares, bomba de calor, cobertura e sensores.</canvas></div>
+          <div class="pool-legend" id="pool-legend" role="group" aria-label="Elementos selecionáveis da cena"></div>
+          <div id="pool-info" aria-live="polite"></div>
+        </div>
+
+        <div class="th-panel" style="margin-top:1rem">
+          <div class="merc" aria-hidden="true"><i id="th-merc" style="height:40%"></i></div>
+          <div class="lcd"><span class="big" id="th-num">18,0</span><span class="un"> °C</span><div class="sm" id="th-rate">+0,00 °C/h</div></div>
+          <div style="flex:1;min-width:200px">
+            <span class="statuschip" id="th-state"><i></i>—</span>
+            <div class="stats" id="pool-stats" style="margin-bottom:0"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:1rem">
+          <h3 data-ico="chart">Temperatura × tempo · comparação de cenários</h3>
+          <div id="pool-chart"></div>
+          <p style="font-size:.72rem;color:var(--faint);margin-top:.4rem">Faixa sombreada = conforto 26–28 °C. “Comparar 5 cenários” integra 72 h com ciclo dia/noite (início às 8 h), nas condições ambientais atuais. Curvas salvas capturam o experimento ao vivo.</p>
+        </div>
+        <div class="sr-only" aria-live="polite" id="pool-live"></div>
+      </div>
+
+      <div class="sim-ctl">
+        <div class="card">
+          <h3 data-ico="target">Cenários prontos</h3>
+          <div class="sc-chips" id="sc-chips" role="group" aria-label="Cinco cenários de aquecimento"></div>
+          <div id="pool-ctl"></div>
+          <div class="btnrow">
+            <button type="button" class="btn sm heat" id="pool-play">⏸ Pausar</button>
+            <button type="button" class="btn sm ghost" id="pool-reset">↺ Reiniciar</button>
+            <button type="button" class="btn sm ghost" id="pool-view" aria-label="Restaurar ângulo de câmera">⌂ Vista</button>
+          </div>
+          <div class="btnrow">
+            <button type="button" class="btn sm coolb" id="pool-save">＋ Salvar curva atual</button>
+            <button type="button" class="btn sm coolb" id="pool-compare">⇄ Comparar 5 cenários</button>
+            <button type="button" class="btn sm ghost" id="pool-clear">🗑 Limpar gráfico</button>
+          </div>
+          <details style="margin-top:.8rem"><summary>Hipóteses do modelo</summary><div class="din" style="font-size:.8rem">
+            <p>IR: η emissor 95%, fator geométrico 1/(1+(d/1,1)²), α água 95%; cobertura bloqueia 90% do IR direto. Solar: G até 700 W/m² com curva senoidal diurna, η coletor 55%. Bomba de calor: COP = 4,9 − 0,085·(27−T<sub>ar</sub>), mín. 2,1. Termostato com histerese de 0,5 °C. Perdas conforme módulo C do laboratório. Dimensões vêm do laboratório (reinicie para aplicar).</p>
+          </div></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABA 6 · ACESSIBILIDADE ============ -->
+  <section class="panel" id="panel-acessibilidade" role="tabpanel" aria-labelledby="tab-acessibilidade" hidden>
+    <p class="kicker">Módulo 06 · Acessibilidade &amp; inclusão</p>
+    <h2>Este laboratório é para todo mundo</h2>
+    <p class="lead">Todas as ferramentas abaixo funcionam <b style="color:var(--ink)">em todas as abas</b> — também disponíveis no topo da página e no botão de acessibilidade. As preferências ficam salvas no seu dispositivo.</p>
+    <p class="ez">Use os botões para deixar o site do seu jeito: letra maior, mais contraste, menos animação.</p>
+    <div class="grid2 reveal" style="margin-top:1.2rem;align-items:start">
+      <div class="card">
+        <h3 data-ico="access">Painel completo de ferramentas</h3>
+        <div id="ax-full"></div>
+      </div>
+      <div>
+        <div class="card">
+          <h3 data-ico="keyboard">Navegação pelo teclado</h3>
+          <p class="deep">Todos os controles são alcançáveis por <kbd>Tab</kbd> e acionáveis por <kbd>Enter</kbd>/<kbd>Espaço</kbd>. O elemento em foco recebe um contorno âmbar de alto destaque. As abas respondem às setas ← →.</p>
+          <div class="tbl-wrap"><table style="min-width:280px"><thead><tr><th>Tecla</th><th>Ação</th></tr></thead><tbody>
+            <tr><td><kbd>1</kbd>–<kbd>8</kbd></td><td>Trocar de módulo</td></tr>
+            <tr><td><kbd>M</kbd> / <kbd>C</kbd></td><td>Som / alto contraste</td></tr>
+            <tr><td><kbd>+</kbd> / <kbd>−</kbd></td><td>Tamanho da fonte</td></tr>
+            <tr><td><kbd>?</kbd> / <kbd>Esc</kbd></td><td>Ajuda / fechar painéis</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <h3 data-ico="eye">Recursos implementados</h3>
+          <div class="pill-list" id="ax-feats"></div>
+        </div>
+      </div>
+    </div>
+    <div class="note info reveal" style="margin-top:1rem"><b>Conteúdo audiovisual acessível:</b> a animação “A jornada da energia” (módulo 02) tem <b>legendas sincronizadas</b>, controle de reprodução, linha do tempo arrastável e <b>transcrição completa</b>. Todas as imagens e gráficos possuem descrições alternativas, e as simulações anunciam seus estados em regiões <i>aria-live</i> para leitores de tela. <button type="button" class="btn sm ghost" data-go="aquecimento" style="display:inline-flex;margin-left:.4rem">Ir à animação</button></div>
+    <p class="note reveal">Com as animações desativadas, os fenômenos decorativos congelam, mas <b>as simulações continuam calculando</b> — os quadros são atualizados de forma estática, sem movimento, para que os resultados permaneçam utilizáveis.</p>
+  </section>
+
+  <!-- ============ ABA 7 · QUIZ ============ -->
+  <section class="panel" id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
+    <p class="kicker">Módulo 07 · Quiz &amp; desafios científicos</p>
+    <h2>Teste seu olhar de físico(a)</h2>
+    <p class="lead">10 perguntas sorteadas, feedback imediato e explicações. Depois, três desafios numéricos que se resolvem <b style="color:var(--ink)">usando o laboratório</b>.</p>
+    <p class="ez">Responda às perguntas e veja na hora se acertou, com explicação.</p>
+    <div class="grid2 reveal" style="margin-top:1.2rem;align-items:start;grid-template-columns:1.5fr 1fr">
+      <div class="card" id="qz-box" aria-live="polite"></div>
+      <div class="card">
+        <h3 data-ico="target">Placar</h3>
+        <div style="display:flex;gap:1.2rem;align-items:center">
+          <svg width="110" height="110" viewBox="0 0 120 120" class="ring" role="img" aria-label="Anel de pontuação do quiz">
+            <defs><linearGradient id="ringgrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff4fa3"/><stop offset="1" stop-color="#ffb020"/></linearGradient></defs>
+            <circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/>
+            <circle class="fgc" id="qz-ring" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            <text id="qz-ringtxt" x="60" y="66" text-anchor="middle" transform="rotate(90 60 60)" fill="var(--ink)" font-family="IBM Plex Mono,monospace" font-size="22" font-weight="600">0%</text>
+          </svg>
+          <div><div class="stats" style="margin:0"><div class="stat"><div class="v hot" id="qz-score">0</div><div class="l">acertos</div></div><div class="stat"><div class="v" id="qz-best">—</div><div class="l">melhor resultado</div></div></div></div>
+        </div>
+        <p style="font-size:.82rem;color:var(--dim);margin-top:.8rem">Dica: os módulos 01, 02 e 04 contêm todas as respostas — volte a eles quando quiser.</p>
+        <button type="button" class="btn sm ghost" id="qz-restart" style="margin-top:.4rem">↻ Novo sorteio de perguntas</button>
+      </div>
+    </div>
+    <section class="blk reveal">
+      <p class="kicker">Desafios práticos · use o laboratório</p>
+      <h3>Resolva como um engenheiro</h3>
+      <p class="lead" style="font-size:.92rem">Cada desafio tem um botão que <b style="color:var(--cyan)">configura o laboratório</b> com os dados do enunciado. Faça o cálculo lá, volte e digite sua resposta (tolerância de ±8%).</p>
+      <div class="grid3" id="ch-list" style="margin-top:1rem"></div>
+    </section>
+  </section>
+
+  <!-- ============ ABA 8 · CONCLUSÃO ============ -->
+  <section class="panel" id="panel-conclusao" role="tabpanel" aria-labelledby="tab-conclusao" hidden>
+    <p class="kicker">Módulo 08 · Conclusão &amp; impacto no CEP</p>
+    <h2>A Física sai do livro e entra na escola</h2>
+    <div class="grid2 reveal" style="margin-top:1rem;align-items:start;grid-template-columns:1fr 1.4fr">
+      <div class="card">
+        <h3 data-ico="flag">Sua trilha de exploração</h3>
+        <div style="display:flex;gap:1rem;align-items:center;margin:.6rem 0">
+          <svg width="96" height="96" viewBox="0 0 120 120" class="ring" role="img" aria-label="Progresso de módulos visitados">
+            <circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/>
+            <circle class="fgc" id="jr-ring" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            <text id="jr-txt" x="60" y="66" text-anchor="middle" transform="rotate(90 60 60)" fill="var(--ink)" font-family="IBM Plex Mono,monospace" font-size="20" font-weight="600">0/8</text>
+          </svg>
+          <div class="pill-list" id="jr-list" style="flex:1"></div>
+        </div>
+      </div>
+      <div>
+        <p class="bigquote">“A Física não está restrita aos livros: ela pode <em>solucionar problemas reais</em> da nossa escola.”</p>
+        <p class="lead" style="margin-top:.9rem;font-size:.95rem">Do espectro eletromagnético ao custo em reais, este laboratório mostrou um caminho completo: <b style="color:var(--ink)">observar → modelar → calcular → simular → decidir</b>. Aquecer (ou não) a piscina do CEP é uma pergunta de engenharia — e a resposta começa com boa Física e dados honestos.</p>
+        <p class="ez">Aprendemos que a ciência ajuda a resolver problemas de verdade da escola.</p>
+      </div>
+    </div>
+    <section class="blk reveal">
+      <p class="kicker">Cinco impactos</p>
+      <div class="grid3" id="impact-grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr))"></div>
+    </section>
+    <section class="blk reveal grid2" style="align-items:start">
+      <div class="card">
+        <h3 data-ico="check">Do conceito ao projeto real — próximos passos</h3>
+        <p style="font-size:.85rem;color:var(--dim)">Marque as etapas concluídas (fica salvo):</p>
+        <div id="cc-list"></div>
+      </div>
+      <div>
+        <div class="card">
+          <h3 data-ico="download">Leve seus resultados</h3>
+          <p style="font-size:.88rem;color:var(--dim)">Gere um relatório em texto com os parâmetros do laboratório, os resultados calculados, o último cenário simulado e seu desempenho no quiz — pronto para apresentar em aula.</p>
+          <div class="btnrow"><button type="button" class="btn heat" id="rep-btn">⬇ Baixar relatório do projeto (.txt)</button></div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <h3 data-ico="book">Referências &amp; fontes</h3>
+          <ul style="font-size:.82rem;color:var(--dim);padding-left:1.1rem;line-height:1.8">
+            <li>HALLIDAY, RESNICK &amp; WALKER — <i>Fundamentos de Física</i>, vol. 2 e 4.</li>
+            <li>INCROPERA et al. — <i>Fundamentos de Transferência de Calor e de Massa</i>.</li>
+            <li>ASHRAE Handbook — HVAC Applications (natatórios, evaporação).</li>
+            <li>INMET — Normais Climatológicas 1991–2020, Curitiba (aproximadas).</li>
+            <li>World Aquatics — faixas de temperatura para prática esportiva (25–28 °C).</li>
+            <li>Tarifas e preços: <b style="color:var(--amber)">valores hipotéticos editáveis</b>, não cotações oficiais.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <a class="brand" href="#hero" style="margin-bottom:.6rem"><span class="mark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="1.9" stroke-linecap="round"><path d="M6 6.5a8 8 0 0 1 12 0"/><path d="M2 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0" stroke="#38e1ff"/><path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0" stroke="#38e1ff"/></svg></span><span><b>TERMO<i>·</i>LAB</b></span></a>
+      <p>Projeto educativo de Física · Colégio Estadual do Paraná, Curitiba. Todas as simulações rodam localmente no seu navegador. Dados hipotéticos sinalizados; nenhum resultado é medição real da piscina do CEP.</p>
+    </div>
+    <nav aria-label="Mapa do site">
+      <a href="#infravermelho">Infravermelho</a><a href="#aquecimento">Aquecimento</a><a href="#cep">No CEP</a><a href="#laboratorio">Laboratório</a><a href="#simulador">Simulador</a><a href="#acessibilidade">Acessibilidade</a><a href="#quiz">Quiz</a><a href="#conclusao">Conclusão</a>
+    </nav>
+  </div>
+</footer>
+
+<div id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   TERMO·LAB CEP — laboratório virtual de Física
+   Arquitetura: helpers → estado → som/acessibilidade → motor de animação
+   → componentes reutilizáveis → física → módulos → boot
+   ===================================================================== */
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(c=>SUP[c]||c).join('');
+const fmt=(n,d=1)=>Number.isFinite(n)?n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const fmtInt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('pt-BR'):'—';
+const fmtSci=(n,d=2)=>{if(!Number.isFinite(n)||n===0)return'0';const e=Math.floor(Math.log10(Math.abs(n)));const m=n/Math.pow(10,e);return fmt(m,d)+' × 10'+sup(e);};
+const money=n=>Number.isFinite(n)?'R$ '+fmt(n,2):'—';
+const fmtDur=s=>{if(!Number.isFinite(s))return'∞';if(s<=0)return'0 min';const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);if(d>0)return d+' d '+h+' h';if(h>0)return h+' h '+m+' min';return m+' min';};
+const fmtLen=l=>l>=1?fmt(l,2)+' m':l>=1e-2?fmt(l*100,1)+' cm':l>=1e-3?fmt(l*1e3,1)+' mm':l>=1e-6?fmt(l*1e6,1)+' µm':fmt(l*1e9,1)+' nm';
+const fmtWave=l=>l>=1?fmt(l,1)+' m':l>=1e-3?fmt(l*1e3,1)+' mm':l>=1e-6?fmt(l*1e6,2)+' µm':fmt(l*1e9,0)+' nm';
+const fmtFreq=f=>f>=1e18?fmt(f/1e18,1)+' EHz':f>=1e15?fmt(f/1e15,1)+' PHz':f>=1e12?fmt(f/1e12,1)+' THz':f>=1e9?fmt(f/1e9,1)+' GHz':f>=1e6?fmt(f/1e6,1)+' MHz':f>=1e3?fmt(f/1e3,1)+' kHz':fmt(f,0)+' Hz';
+const fmtEv=e=>e>=1?fmt(e,2)+' eV':e>=1e-3?fmt(e*1e3,2)+' meV':fmt(e*1e6,1)+' µeV';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const C0=299792458, H=6.62607015e-34, KB=1.380649e-23, WIEN=2.897771955e-3, SIGMA=5.670374419e-8;
+
+/* ---------- persistência & eventos ---------- */
+const P={d:{},load(){try{P.d=JSON.parse(localStorage.getItem('termolab-cep')||'{}')}catch(e){P.d={}}},save(){try{localStorage.setItem('termolab-cep',JSON.stringify(P.d))}catch(e){}}};
+let saveT=null; const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>P.save(),350)};
+const Bus={m:{},on(e,f){(Bus.m[e]=Bus.m[e]||[]).push(f)},emit(e,d){(Bus.m[e]||[]).forEach(f=>f(d))}};
+
+/* ---------- toasts ---------- */
+function toast(msg,kind='info',ms=3600){
+  const box=el('toasts'); if(box.children.length>3)box.firstChild.remove();
+  const t=document.createElement('div');t.className='toast '+(kind==='info'?'':kind);
+  t.innerHTML='<span aria-hidden="true">'+(kind==='ok'?'✔':kind==='warn'?'⚠':kind==='err'?'✖':'ℹ')+'</span><span>'+msg+'</span>';
+  box.appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),350)},ms);
+}
+
+/* ---------- ícones ---------- */
+const ICO={
+ir:'<circle cx="12" cy="17.5" r="2"/><path d="M7.5 13.5a6.5 6.5 0 0 1 9 0M4.5 9.5a10.5 10.5 0 0 1 15 0"/>',
+wave:'<path d="M2 12c2.5-3.5 5-3.5 7.5 0s5 3.5 7.5 0 3-2.5 5-1"/><path d="M2 18c2.5-3.5 5-3.5 7.5 0s5 3.5 7.5 0 3-2.5 5-1"/>',
+flame:'<path d="M12 3c1 3.5 5 5.5 5 9.5a5 5 0 0 1-10 0c0-2 1-3.8 2.5-5.5C10.5 8.5 12 6.5 12 3z"/><path d="M12 21a3 3 0 0 1-3-3c0-1.5 1.5-2.5 3-4 1.5 1.5 3 2.5 3 4a3 3 0 0 1-3 3z"/>',
+school:'<path d="M3 21h18M5 21V10l7-5.5L19 10v11M9 21v-6h6v6M12 4.5V2.5"/>',
+flask:'<path d="M10 2.5h4M11 2.5v6.2L5.4 18a2 2 0 0 0 1.8 3h9.6a2 2 0 0 0 1.8-3L13 8.7V2.5"/><path d="M7.5 15h9"/>',
+pool:'<path d="M2 16.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 20.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M8 13.5V5.5a2 2 0 0 1 4 0M14 13.5V5.5a2 2 0 0 1 4 0M8 8.5h6M8 11.5h6"/>',
+access:'<circle cx="12" cy="4.5" r="2"/><path d="M3.5 8.5l6 1.2h5l6-1.2M12 9.7v5l-3.5 6.5M12 14.7l3.5 6.5"/>',
+quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.3 9.3a2.7 2.7 0 1 1 3.8 2.5c-.9.4-1.1 1-1.1 1.9"/><circle cx="12" cy="17" r=".7"/>',
+flag:'<path d="M5 21.5V3.5"/><path d="M5 4h12.5l-3 4 3 4H5"/>',
+sun:'<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/>',
+moon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>',
+wind:'<path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M3 12h15a2.5 2.5 0 1 1-2.5 2.5M3 16h8a2.2 2.2 0 1 1-2.2 2.2"/>',
+drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+bolt:'<path d="M13 2.5L4.5 13.5H11l-1 8L18.5 10H12l1-7.5z"/>',
+coin:'<circle cx="12" cy="12" r="9"/><path d="M12 6.5v11M15 8.5c-.8-1-4.5-1.6-4.5.7 0 2.6 4.8 1.4 4.8 4 0 2.4-3.8 2-5.3.8"/>',
+thermo:'<path d="M10 4a2 2 0 0 1 4 0v9.2a4.5 4.5 0 1 1-4 0V4z"/><circle cx="12" cy="17" r="1.8"/>',
+chart:'<path d="M3.5 3.5v17h17"/><path d="M7 15l4-5 3.5 3 5-7"/>',
+camera:'<rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="4"/><path d="M8.5 7l1.5-2.5h4L15.5 7"/>',
+eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+check:'<path d="M4 12.5l5 5L20 6.5"/>',
+warn:'<path d="M12 3L2.5 20h19L12 3z"/><path d="M12 9.5v5M12 17.2v.6"/>',
+book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17.5H6.5A2.5 2.5 0 0 0 4 22V4.5z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>',
+leaf:'<path d="M4 20C4 9 12 4 20.5 3.5 20 12 15 20 4 20z"/><path d="M4 20c3-6 7-9 12-11"/>',
+shield:'<path d="M12 2.5l8 3v6c0 5.5-3.5 8.5-8 10-4.5-1.5-8-4.5-8-10v-6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-4.5"/>',
+heart:'<path d="M12 20.5S3 14.5 3 8.8A4.8 4.8 0 0 1 12 6a4.8 4.8 0 0 1 9 2.8c0 5.7-9 11.7-9 11.7z"/>',
+timer:'<circle cx="12" cy="13.5" r="8"/><path d="M12 9.5v4l3 2M9.5 2.5h5"/>',
+layers:'<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5M3 17l9 5 9-5"/>',
+keyboard:'<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.5M10 10h.5M14 10h.5M18 10h.5M6 14h.5M9 14h6.5M18 14h.5"/>',
+download:'<path d="M12 3v11M7.5 10L12 14.5 16.5 10M4 17v3.5h16V17"/>',
+sensor:'<circle cx="12" cy="16" r="3"/><path d="M12 13V7M8 6a6 6 0 0 1 8 0M5.5 3.5a10 10 0 0 1 13 0"/>',
+heater:'<rect x="4" y="5" width="16" height="11" rx="2"/><path d="M7 8v5M11 8v5M15 8v5M17 8v5M6 20h4M14 20h4"/>',
+remote:'<rect x="8" y="2.5" width="8" height="19" rx="2.5"/><circle cx="12" cy="6.5" r="1.3"/><path d="M10.5 11h3M10.5 14h3M10.5 17h3"/>',
+motion:'<path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4L12 3z"/><path d="M19 15l.9 2.3 2.1.7-2.1.7L19 21l-.9-2.3-2.1-.7 2.1-.7L19 15z"/>',
+contrast:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18A9 9 0 0 0 12 3z" fill="currentColor" stroke="none"/>',
+sound:'<path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+soundoff:'<path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
+gauge:'<path d="M4 14a8 8 0 1 1 16 0"/><path d="M12 14l4-4"/><path d="M3 18h18"/>'
+};
+const icon=(n,s=18)=>'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICO[n]||ICO.ir)+'</svg>';
+$$('[data-ico]').forEach(h=>h.insertAdjacentHTML('afterbegin',icon(h.dataset.ico,20)));
+
+/* ---------- som (WebAudio, ligado a eventos visíveis) ---------- */
+const Sound={ctx:null,master:null,
+ ensure(){if(Sound.ctx)return;try{const AC=window.AudioContext||window.webkitAudioContext;Sound.ctx=new AC();Sound.master=Sound.ctx.createGain();Sound.master.gain.value=.9;Sound.master.connect(Sound.ctx.destination)}catch(e){}},
+ tone(f,d,type,g,f2,at){const c=Sound.ctx,t=c.currentTime+(at||0);const o=c.createOscillator(),ga=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+d);ga.gain.setValueAtTime(g||.05,t);ga.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(ga);ga.connect(Sound.master);o.start(t);o.stop(t+d+.03)},
+ play(n){if(!A11y.sound)return;Sound.ensure();if(!Sound.ctx)return;if(Sound.ctx.state==='suspended')Sound.ctx.resume();const T=Sound.tone;
+  if(n==='click')T(660,.06,'sine',.04);
+  else if(n==='tab')T(440,.1,'sine',.045,660);
+  else if(n==='on')T(500,.13,'sine',.055,860);
+  else if(n==='off')T(640,.13,'sine',.045,320);
+  else if(n==='power'){T(95,.4,'sine',.08,52);T(1100,.28,'sine',.02,260)}
+  else if(n==='ok'){T(523,.12,'triangle',.055);T(659,.12,'triangle',.055,0,.08);T(784,.16,'triangle',.055,0,.16)}
+  else if(n==='bad')T(185,.24,'sawtooth',.04,120);
+  else if(n==='win'){[523,659,784,1046,1318].forEach((f,i)=>T(f,.14,'triangle',.055,0,i*.085))}
+  else if(n==='pop')T(880,.05,'square',.025);
+ }};
+
+/* ---------- acessibilidade global ---------- */
+const A11y={font:100,contrast:false,easy:false,dyslex:false,motion:true,sound:true,
+ load(){const a=P.d.a11y||{};A11y.font=a.font||100;A11y.contrast=!!a.contrast;A11y.easy=!!a.easy;A11y.dyslex=!!a.dyslex;
+  A11y.motion=a.motion!==undefined?!!a.motion:!window.matchMedia('(prefers-reduced-motion: reduce)').matches;A11y.sound=a.sound!==false;},
+ persist(){P.d.a11y={font:A11y.font,contrast:A11y.contrast,easy:A11y.easy,dyslex:A11y.dyslex,motion:A11y.motion,sound:A11y.sound};saveSoon()},
+ apply(){const r=document.documentElement;r.classList.toggle('hc',A11y.contrast);r.classList.toggle('easy',A11y.easy);r.classList.toggle('dys',A11y.dyslex);r.classList.toggle('nomo',!A11y.motion);
+  r.style.fontSize=(16*A11y.font/100)+'px';
+  if(!A11y.motion)$$('.reveal').forEach(x=>x.classList.add('in'));
+  refreshPal();Engine.list.forEach(v=>v.dirty=true);Bus.emit('theme');Bus.emit('a11y');A11y.persist();},
+ act(k){let msg='';
+  if(k==='font+'){A11y.font=clamp(A11y.font+10,80,170);msg='Fonte: '+A11y.font+'%'}
+  else if(k==='font-'){A11y.font=clamp(A11y.font-10,80,170);msg='Fonte: '+A11y.font+'%'}
+  else if(k==='axreset'){A11y.font=100;A11y.contrast=false;A11y.easy=false;A11y.dyslex=false;A11y.motion=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;A11y.sound=true;msg='Preferências de acessibilidade restauradas'}
+  else if(k in A11y){A11y[k]=!A11y[k];const nm={contrast:'Alto contraste',easy:'Leitura simplificada',dyslex:'Fonte para dislexia',motion:'Animações',sound:'Sons'};msg=nm[k]+': '+(A11y[k]?'ativado':'desativado');}
+  A11y.apply();Sound.play(A11y[k]===false?'off':'on');if(msg)toast(msg,'info',2200);}
+};
+Bus.on('a11y',()=>{
+  $$('[data-ax]').forEach(b=>{const k=b.dataset.ax;
+    if(k==='contrast'||k==='easy'||k==='dyslex'||k==='motion'||k==='sound')b.setAttribute('aria-pressed',String(!!A11y[k]));
+    if(k==='font+')b.disabled=A11y.font>=170; if(k==='font-')b.disabled=A11y.font<=80;});
+  $$('[data-fontval]').forEach(s=>s.textContent=A11y.font+'%');
+  const sb=$('[data-ax="sound"]');if(sb&&!sb.dataset.wide)sb.innerHTML=icon(A11y.sound?'sound':'soundoff',18);
+  const mb=$('[data-ax="motion"]');if(mb&&!mb.dataset.wide)mb.innerHTML=icon('motion',18);
+});
+function buildA11yUI(mount,wide){
+  const rows=[['contrast','Alto contraste','contrast'],['easy','Leitura simplificada','book'],['dyslex','Fonte amigável para dislexia','eye'],['motion','Animações','motion'],['sound','Sons de feedback','sound']];
+  let h='<div class="switchrow"><span class="lb">'+icon('keyboard',17)+' Tamanho da fonte · <b data-fontval style="color:var(--cyan)">100%</b></span><span style="display:flex;gap:.35rem"><button type="button" class="qbtn" data-ax="font-" aria-label="Diminuir fonte">A−</button><button type="button" class="qbtn" data-ax="font+" aria-label="Aumentar fonte">A+</button></span></div>';
+  rows.forEach(([k,label,ic])=>{h+='<div class="switchrow"><span class="lb">'+icon(ic,17)+' '+label+'</span><button type="button" class="sw coolsw" role="switch" data-ax="'+k+'" data-wide="1" aria-checked="false" aria-label="'+label+'"></button></div>';});
+  h+='<div class="btnrow"><button type="button" class="btn sm ghost" data-ax="axreset">↺ Restaurar padrões</button></div>';
+  mount.innerHTML=h;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ax]');if(b){A11y.act(b.dataset.ax)}});
+
+/* ---------- paleta & motor de renderização ---------- */
+const Pal={};
+function refreshPal(){const cs=getComputedStyle(document.documentElement);
+ ['ink','dim','faint','line','blue','cyan','teal','green','amber','orange','hot','red','violet','magenta','bg0','bg1','bg2','bg3','focus'].forEach(k=>Pal[k]=cs.getPropertyValue('--'+k).trim());
+ Pal.hc=document.documentElement.classList.contains('hc');}
+const RO=new ResizeObserver(es=>{es.forEach(en=>{const v=en.target._v;if(v){fitCanvas(v.el);v.dirty=true;if(v.chart)v.chart.fit();}})});
+function fitCanvas(c){const r=c.getBoundingClientRect();if(r.width<10||r.height<10)return false;const dpr=Math.min(2,window.devicePixelRatio||1);
+ const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+ if(c.width!==w||c.height!==h){c.width=w;c.height=h;}
+ c._w=r.width;c._h=r.height;c._ctx=c.getContext('2d');c._ctx.setTransform(dpr,0,0,dpr,0,0);return true;}
+const Engine={list:[],last:0,started:false,
+ add(v){v.vis=!!v.ignoreVis;v.dirty=true;v.el._v=v;RO.observe(v.el);Engine.list.push(v);return v},
+ start(){if(Engine.started)return;Engine.started=true;requestAnimationFrame(Engine.tick)},
+ tick(t){requestAnimationFrame(Engine.tick);const dt=Math.min(.05,(t-Engine.last)/1000||0);Engine.last=t;
+  if(document.hidden)return;const ts=t/1000;
+  for(const v of Engine.list){
+    if(v.tab&&v.tab!==App.tab)continue;
+    if(v.sim){v.draw(dt,ts,v);v.dirty=false;continue}
+    if(!v.vis)continue;
+    if(v.static&&!v.dirty)continue;
+    if(!A11y.motion&&!v.dirty)continue;
+    v.draw(A11y.motion?dt:0,ts,v);v.dirty=false;
+  }}};
+window.addEventListener('resize',()=>{Engine.list.forEach(v=>{fitCanvas(v.el);v.dirty=true});measureNav();});
+
+/* ---------- componentes: controles ---------- */
+let ctlSeq=0;
+function makeRange(mount,o){
+ const id=o.id||('ctl'+(++ctlSeq));const d=document.createElement('div');d.className='ctl';
+ d.innerHTML='<div class="ctl-top"><label for="'+id+'">'+o.label+'</label><span style="display:flex;gap:.45rem;align-items:baseline">'+(o.num?'<input class="num" type="number" inputmode="decimal" id="'+id+'-n" min="'+o.min+'" max="'+o.max+'" step="'+(o.step||1)+'" aria-label="'+o.label+' (valor numérico)">':'')+'<output id="'+id+'-o" for="'+id+'"></output></span></div><input type="range" id="'+id+'" min="'+o.min+'" max="'+o.max+'" step="'+(o.step||1)+'" value="'+o.val+'" aria-label="'+o.label+'">';
+ mount.appendChild(d);
+ const r=d.querySelector('input[type=range]'),out=d.querySelector('output'),num=d.querySelector('.num');
+ const show=v=>{out.textContent=(o.fmt?o.fmt(v):fmt(v,o.dec!==undefined?o.dec:1))+(o.unit?' '+o.unit:'');
+   const p=(v-o.min)/(o.max-o.min)*100;r.style.background='linear-gradient(90deg,'+(o.color||'var(--acc,var(--orange))')+' '+p+'%,var(--bg3) '+p+'%)';};
+ let val=o.val;
+ const set=(v,silent)=>{v=clamp(v,o.min,o.max);val=v;r.value=v;if(num&&document.activeElement!==num)num.value=v;show(v);if(!silent&&o.oninput)o.oninput(v)};
+ r.addEventListener('input',()=>{val=parseFloat(r.value);if(num)num.value=val;show(val);Sound.play('pop');if(o.oninput)o.oninput(val)});
+ if(num){num.value=val;num.addEventListener('input',()=>{const v=parseFloat(num.value);if(Number.isFinite(v)&&v>=o.min&&v<=o.max){val=v;r.value=v;show(v);if(o.oninput)o.oninput(v)}});
+  num.addEventListener('change',()=>{let v=parseFloat(num.value);if(!Number.isFinite(v))v=val;set(v)});}
+ set(val,true);
+ return {set,get:()=>val,row:d,input:r};
+}
+function makeToggle(mount,o){
+ const d=document.createElement('div');d.className='switchrow';
+ d.innerHTML='<span class="lb">'+(o.ico?icon(o.ico,17):'')+' '+o.label+'</span><button type="button" class="sw'+(o.cool?' coolsw':'')+'" role="switch" aria-checked="'+!!o.val+'" aria-label="'+o.label+'"></button>';
+ mount.appendChild(d);const b=d.querySelector('.sw');let val=!!o.val;
+ const set=(v,silent)=>{val=!!v;b.setAttribute('aria-checked',String(val));if(!silent&&o.onchange)o.onchange(val)};
+ b.addEventListener('click',()=>{set(!val);Sound.play(val?'on':'off')});
+ return {set,get:()=>val,row:d};
+}
+function makeSelect(mount,o){
+ const id='sel'+(++ctlSeq);const d=document.createElement('div');d.className='ctl';
+ d.innerHTML='<div class="ctl-top"><label for="'+id+'">'+o.label+'</label></div><select id="'+id+'">'+o.options.map(op=>'<option value="'+op[0]+'"'+(op[0]===o.val?' selected':'')+'>'+op[1]+'</option>').join('')+'</select>';
+ mount.appendChild(d);const s=d.querySelector('select');
+ s.addEventListener('change',()=>{Sound.play('click');if(o.onchange)o.onchange(s.value)});
+ return {set:v=>{s.value=v},get:()=>s.value,row:d};
+}
+function statGrid(mount,items){const map={};mount.innerHTML='';items.forEach(it=>{const d=document.createElement('div');d.className='stat';d.innerHTML='<div class="v '+(it.kind||'')+'" id="'+it.id+'">—</div><div class="l">'+it.label+'</div>';mount.appendChild(d);map[it.id]=d.querySelector('.v')});return map;}
+function setTxt(id,t){const e=el(id);if(e)e.textContent=t}
+function barRow(label,color,val,max,txt){const p=max>0?clamp(Math.abs(val)/max*100,0,100):0;
+ return '<div class="brow"><span class="bl"><i style="background:'+color+'"></i>'+label+'</span><span class="track"><span class="fill" style="width:'+p+'%;background:'+color+'"></span></span><span class="bv">'+txt+'</span></div>';}
+
+/* ---------- componente: gráfico de linhas interativo ---------- */
+const CHART_COLORS=['#38e1ff','#ff7a1c','#3ddc97','#8f7bff','#ffc44d','#ff4fa3','#4f8dff','#ff5d6c'];
+class LineChart{
+ constructor(host,o){this.host=host;host.classList.add('chart');this.o=Object.assign({series:[],bands:[],fmtX:v=>fmt(v,0),fmtY:v=>fmt(v,1),height:null,empty:'Aguardando dados…',aria:'Gráfico de linhas interativo'},o);
+  this.cv=document.createElement('canvas');this.cv.setAttribute('role','img');this.cv.setAttribute('aria-label',this.o.aria);
+  this.tip=document.createElement('div');this.tip.className='chart-tip';this.leg=document.createElement('div');this.leg.className='chart-legend';
+  host.append(this.cv,this.tip,this.leg);this.ctx=this.cv.getContext('2d');this.hidden=new Set();this.hover=null;this._raf=false;
+  this.cv._v={el:this.cv,chart:this,dirty:true};RO.observe(this.cv);
+  const mv=e=>{const r=this.cv.getBoundingClientRect();this.hover={x:e.clientX-r.left,y:e.clientY-r.top};this.draw()};
+  this.cv.addEventListener('pointermove',mv);this.cv.addEventListener('pointerdown',mv);
+  this.cv.addEventListener('pointerleave',()=>{this.hover=null;this.tip.style.display='none';this.draw()});
+  Bus.on('theme',()=>this.draw());this.buildLegend();this.fit();}
+ series(id){let s=this.o.series.find(x=>x.id===id);if(!s){s={id,name:id,color:CHART_COLORS[this.o.series.length%8],points:[]};this.o.series.push(s);this.buildLegend()}return s}
+ setSeries(id,name,color,pts,dash){const s=this.series(id);s.name=name;s.color=color;s.points=pts;if(dash!==undefined)s.dash=dash;this.buildLegend();this.schedule()}
+ addPoint(id,x,y){const s=this.series(id);s.points.push([x,y]);if(s.points.length>1400)s.points.splice(0,200);this.schedule()}
+ clearAll(keepLive){this.o.series=this.o.series.filter(s=>keepLive&&s.id==='live');this.buildLegend();this.schedule()}
+ buildLegend(){this.
