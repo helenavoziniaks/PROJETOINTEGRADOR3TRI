@@ -391,3 +391,620 @@ TL.boot=function(){
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',TL.boot);else TL.boot();
 })();
+/* ============================================================
+   VISITA GUIADA INTERATIVA — Professor Virtual do Projeto
+   Sistema de onboarding integrado aos componentes reais
+   ============================================================ */
+'use strict';
+(function(){
+const TL=window.TL;
+
+/* ---------- estado da visita ---------- */
+const Tour={
+ active:false,
+ step:0,
+ completed:new Set(),
+ actions:{},
+ steps:[],
+ overlay:null,
+ tooltip:null,
+ progressBar:null,
+ highlight:null,
+ paused:false,
+ introModal:null,
+ completionModal:null,
+ metrics:{tabsVisited:new Set(),experiments:0,challengesCompleted:0}
+};
+
+/* ---------- dados das etapas ---------- */
+Tour.steps=[
+ {
+  id:'intro',
+  tab:'inicio',
+  element:'#hero-title',
+  title:'Bem-vindo(a) ao projeto!',
+  text:'Ei! Que tal conhecer o projeto? Vou te mostrar como tudo funciona. Vamos explorar a radiação infravermelha, entender como o calor chega até a água e testar algumas simulações. É só clicar em próximo e acompanhar!',
+  action:null,
+  waitForAction:false,
+  position:'center'
+ },
+ {
+  id:'conhecendo',
+  tab:'inicio',
+  element:'#hero-title',
+  title:'Conhecendo o projeto',
+  text:'Começamos por aqui! Esse projeto foi desenvolvido para mostrar como a Física pode ser aplicada em uma situação real: o possível aquecimento da piscina do Colégio Estadual do Paraná.',
+  action:null,
+  waitForAction:false,
+  position:'bottom'
+ },
+ {
+  id:'radiacao',
+  tab:'radiacao',
+  element:'#sp-main',
+  title:'Radiação infravermelha',
+  text:'Aqui vamos entender o que é a radiação infravermelha. Ela é uma forma de energia eletromagnética, que também está relacionada à emissão de calor pelos corpos.<br><br>Experimente clicar nas diferentes faixas do espectro. Assim você consegue comparar o infravermelho com a luz visível e outras formas de radiação.',
+  action:'spectrum-interaction',
+  waitForAction:true,
+  position:'right'
+ },
+ {
+  id:'transferencia',
+  tab:'transferencia',
+  element:'#me-rad',
+  title:'Transferência de calor',
+  text:'Agora vamos entender como o calor se movimenta! Existem três formas principais: radiação, condução e convecção.<br><br>Clique em cada um deles para descobrir como funcionam. Pense em como esses três processos podem aparecer no aquecimento de uma piscina.',
+  action:'mechanism-click',
+  waitForAction:true,
+  position:'bottom'
+ },
+ {
+  id:'cep',
+  tab:'cep',
+  element:'#dg-svg',
+  title:'Aplicação na piscina do CEP',
+  text:'Agora vem a parte mais interessante: vamos trazer tudo isso para a realidade do nosso colégio. Imagine como seria utilizar um sistema de aquecimento para tornar a piscina mais confortável e ampliar suas possibilidades de utilização.<br><br>Clique nos elementos numerados do diagrama para saber mais sobre cada componente.',
+  action:'diagram-interaction',
+  waitForAction:true,
+  position:'top'
+ },
+ {
+  id:'laboratorio-a',
+  tab:'laboratorio',
+  element:'#lab-a',
+  title:'Laboratório de cálculos — Energia',
+  text:'Chegou a hora de colocar a matemática em prática! Aqui conseguimos calcular quanta energia seria necessária para aumentar a temperatura da água.<br><br>Esse cálculo considera três coisas: a quantidade de água, o calor específico dela e o quanto queremos aumentar a temperatura.<br><br>Fórmula: <b>Q = m × c × ΔT</b>',
+  action:null,
+  waitForAction:false,
+  position:'bottom'
+ },
+ {
+  id:'laboratorio-calc',
+  tab:'laboratorio',
+  element:'#lab-a-in',
+  title:'Experimente os valores',
+  text:'Altere a temperatura inicial e a temperatura desejada. Repare como o resultado muda automaticamente!<br><br>Depois, veja os resultados em kWh, potência, tempo e custo estimado.',
+  action:'calculator-input',
+  waitForAction:true,
+  position:'right'
+ },
+ {
+  id:'simulador',
+  tab:'simulador',
+  element:'#pool-ctl',
+  title:'Simulador de aquecimento',
+  text:'Agora vamos fazer um experimento! Aqui você consegue testar como diferentes condições interferem no aquecimento da piscina.<br><br>Você pode controlar a potência, temperatura, ambiente, cobertura térmica e fonte de aquecimento.',
+  action:null,
+  waitForAction:false,
+  position:'left'
+ },
+ {
+  id:'desafio-sim',
+  tab:'simulador',
+  element:'#pool-play',
+  title:'Desafio: Vamos aquecer a piscina!',
+  text:'1. Escolha uma temperatura inicial<br>2. Defina uma temperatura desejada<br>3. Ligue o sistema de aquecimento<br>4. Observe o termômetro<br>5. Acompanhe o gráfico de temperatura<br><br>Agora clique no botão para ligar o aquecimento!',
+  action:'heater-on',
+  waitForAction:true,
+  position:'top'
+ },
+ {
+  id:'tecnologias',
+  tab:'simulador',
+  element:'#sc-chips',
+  title:'Comparação de tecnologias',
+  text:'Nem todo sistema aquece a água da mesma maneira. Aqui podemos comparar diferentes tecnologias e entender qual delas pode apresentar melhor desempenho em determinadas condições.<br><br>Selecione duas tecnologias diferentes e observe os resultados no gráfico.',
+  action:'scenario-compare',
+  waitForAction:true,
+  position:'bottom'
+ },
+ {
+  id:'acessibilidade',
+  tab:'inicio',
+  element:'#ax-btn',
+  title:'Acessibilidade e VLibras',
+  text:'E esse projeto também foi pensado para ser acessível! Aqui você encontra recursos que ajudam diferentes pessoas a navegar pelo conteúdo, incluindo a tradução de textos para Libras por meio do VLibras.<br><br>Veja onde ficam os controles de tamanho de fonte, contraste e demais recursos.',
+  action:null,
+  waitForAction:false,
+  position:'left'
+ },
+ {
+  id:'quiz',
+  tab:'desafio',
+  element:'#qz-box',
+  title:'Desafio científico',
+  text:'Agora que você já explorou o projeto, chegou a hora de testar o que aprendeu!<br><br>Responda as perguntas e veja sua pontuação. Não tem problema errar — o importante é aprender!',
+  action:'quiz-answer',
+  waitForAction:true,
+  position:'right'
+ },
+ {
+  id:'final',
+  tab:'desafio',
+  element:'#conclusao-blk',
+  title:'Você explorou a energia!',
+  text:'Pronto! Agora você já conhece os principais conceitos, sabe utilizar nossas ferramentas e viu como a Física pode ser aplicada em situações reais.<br><br>Mas lembre-se: a melhor maneira de aprender ciência é continuar experimentando!',
+  action:null,
+  waitForAction:false,
+  position:'center'
+ }
+];
+
+/* ---------- helpers ---------- */
+function createOverlay(){
+ if(Tour.overlay)return;
+ Tour.overlay=document.createElement('div');
+ Tour.overlay.id='tour-overlay';
+ Tour.overlay.setAttribute('aria-hidden','true');
+ document.body.appendChild(Tour.overlay);
+ 
+ Tour.tooltip=document.createElement('div');
+ Tour.tooltip.id='tour-tooltip';
+ Tour.tooltip.setAttribute('role','dialog');
+ Tour.tooltip.setAttribute('aria-label','Tutorial interativo');
+ document.body.appendChild(Tour.tooltip);
+ 
+ Tour.highlight=document.createElement('div');
+ Tour.highlight.id='tour-highlight';
+ document.body.appendChild(Tour.highlight);
+ 
+ Tour.progressBar=document.createElement('div');
+ Tour.progressBar.id='tour-progress';
+ document.body.appendChild(Tour.progressBar);
+}
+
+function showIntro(){
+ if(Tour.introModal)return;
+ Tour.introModal=document.createElement('div');
+ Tour.introModal.id='tour-intro-modal';
+ Tour.introModal.innerHTML=`
+  <div class="tour-intro-content">
+    <h2>👋 Bem-vindo(a) à Visita Guiada!</h2>
+    <p>Ei! Que tal conhecer o projeto? Vou te mostrar como tudo funciona.</p>
+    <p>Vamos explorar a radiação infravermelha, entender como o calor chega até a água e testar algumas simulações.</p>
+    <p>É só clicar em <b>próximo</b> e acompanhar!</p>
+    <div class="tour-intro-buttons">
+      <button type="button" class="btn heat" id="tour-start">▶ Começar visita</button>
+      <button type="button" class="btn ghost" id="tour-explore">Explorar sozinho</button>
+    </div>
+  </div>
+ `;
+ document.body.appendChild(Tour.introModal);
+ 
+ Tour.introModal.querySelector('#tour-start').addEventListener('click',()=>{
+  Tour.introModal.remove();
+  Tour.introModal=null;
+  startTour();
+ });
+ 
+ Tour.introModal.querySelector('#tour-explore').addEventListener('click',()=>{
+  Tour.introModal.remove();
+  Tour.introModal=null;
+  Tour.active=false;
+  hideTourUI();
+ });
+}
+
+function startTour(){
+ Tour.active=true;
+ Tour.step=0;
+ Tour.completed.clear();
+ Tour.actions={};
+ Tour.metrics={tabsVisited:new Set(),experiments:0,challengesCompleted:0};
+ createOverlay();
+ renderStep();
+ TL.toast('Visita guiada iniciada! Clique em "Próximo" para continuar.','info',3000);
+}
+
+function renderStep(){
+ if(!Tour.active||Tour.step>=Tour.steps.length){
+  showCompletion();
+  return;
+ }
+ 
+ const step=Tour.steps[Tour.step];
+ 
+ // Navegar para a aba correta
+ if(step.tab&&step.tab!==TL.App.tab){
+  TL.App.go(step.tab,false);
+ }
+ 
+ // Aguardar renderização
+ setTimeout(()=>{
+  const el=document.querySelector(step.element);
+  if(el){
+   // Destacar elemento
+   highlightElement(el);
+   
+   // Posicionar tooltip
+   positionTooltip(el,step);
+   
+   // Atualizar conteúdo
+   updateTooltipContent(step);
+   
+   // Atualizar barra de progresso
+   updateProgressBar();
+   
+   // Scroll automático
+   scrollToElement(el);
+   
+   // Registrar métricas
+   if(step.tab)Tour.metrics.tabsVisited.add(step.tab);
+  } else {
+   // Se elemento não encontrado, avançar
+   console.warn('Elemento não encontrado:',step.element);
+   nextStep();
+  }
+ },300);
+}
+
+function highlightElement(el){
+ if(!Tour.highlight)return;
+ const rect=el.getBoundingClientRect();
+ const scrollY=window.scrollY||window.pageYOffset;
+ const scrollX=window.scrollX||window.pageXOffset;
+ 
+ Tour.highlight.style.display='block';
+ Tour.highlight.style.top=(rect.top+scrollY-8)+'px';
+ Tour.highlight.style.left=(rect.left+scrollX-8)+'px';
+ Tour.highlight.style.width=(rect.width+16)+'px';
+ Tour.highlight.style.height=(rect.height+16)+'px';
+ 
+ // Adicionar classe ao elemento destacado
+ el.classList.add('tour-highlighted');
+ setTimeout(()=>el.classList.remove('tour-highlighted'),3000);
+}
+
+function positionTooltip(el,step){
+ if(!Tour.tooltip)return;
+ const rect=el.getBoundingClientRect();
+ const scrollY=window.scrollY||window.pageYOffset;
+ const scrollX=window.scrollX||window.pageXOffset;
+ 
+ let top,left;
+ const tooltipWidth=320;
+ const tooltipHeight=200;
+ const margin=16;
+ 
+ switch(step.position){
+  case 'top':
+   top=rect.top+scrollY-tooltipHeight-margin;
+   left=rect.left+scrollX+(rect.width/2)-(tooltipWidth/2);
+   break;
+  case 'bottom':
+   top=rect.bottom+scrollY+margin;
+   left=rect.left+scrollX+(rect.width/2)-(tooltipWidth/2);
+   break;
+  case 'left':
+   top=rect.top+scrollY+(rect.height/2)-(tooltipHeight/2);
+   left=rect.left+scrollX-tooltipWidth-margin;
+   break;
+  case 'right':
+   top=rect.top+scrollY+(rect.height/2)-(tooltipHeight/2);
+   left=rect.right+scrollX+margin;
+   break;
+  case 'center':
+  default:
+   top=window.innerHeight/2-(tooltipHeight/2)+scrollY;
+   left=window.innerWidth/2-(tooltipWidth/2)+scrollX;
+   break;
+ }
+ 
+ // Garantir que fique dentro da viewport
+ left=Math.max(margin,Math.min(left,window.innerWidth-tooltipWidth-margin+scrollX));
+ top=Math.max(margin,Math.min(top,window.innerHeight-tooltipHeight-margin+scrollY));
+ 
+ Tour.tooltip.style.top=top+'px';
+ Tour.tooltip.style.left=left+'px';
+ Tour.tooltip.style.display='block';
+}
+
+function updateTooltipContent(step){
+ if(!Tour.tooltip)return;
+ 
+ const progress=((Tour.step+1)/Tour.steps.length*100).toFixed(0);
+ 
+ Tour.tooltip.innerHTML=`
+  <div class="tour-tooltip-header">
+    <span class="tour-step-number">${Tour.step+1}/${Tour.steps.length}</span>
+    <h3>${step.title}</h3>
+  </div>
+  <div class="tour-tooltip-body">
+    <p>${step.text}</p>
+  </div>
+  <div class="tour-tooltip-actions">
+    <button type="button" class="btn sm ghost" id="tour-prev" ${Tour.step===0?'disabled':''}>← Anterior</button>
+    <button type="button" class="btn sm ghost" id="tour-skip">Pular etapa</button>
+    <button type="button" class="btn sm heat" id="tour-next">${step.waitForAction?'Aguardando...':'Próximo →'}</button>
+    <button type="button" class="btn sm ghost" id="tour-exit">✕ Sair</button>
+  </div>
+ `;
+ 
+ // Event listeners
+ Tour.tooltip.querySelector('#tour-prev').addEventListener('click',prevStep);
+ Tour.tooltip.querySelector('#tour-skip').addEventListener('click',nextStep);
+ Tour.tooltip.querySelector('#tour-next').addEventListener('click',()=>{
+  if(!step.waitForAction||Tour.actions[step.id]){
+   nextStep();
+  } else {
+   TL.toast('Complete a ação solicitada antes de avançar!','warn',2000);
+  }
+ });
+ Tour.tooltip.querySelector('#tour-exit').addEventListener('click',exitTour);
+ 
+ // Se aguarda ação, desabilitar próximo
+ if(step.waitForAction&&!Tour.actions[step.id]){
+  const nextBtn=Tour.tooltip.querySelector('#tour-next');
+  nextBtn.disabled=true;
+  nextBtn.textContent='Complete a ação primeiro';
+ }
+}
+
+function updateProgressBar(){
+ if(!Tour.progressBar)return;
+ const progress=(Tour.step/Tour.steps.length*100).toFixed(0);
+ Tour.progressBar.style.display='block';
+ Tour.progressBar.innerHTML=`<div class="tour-progress-bar" style="width:${progress}%"></div>`;
+}
+
+function scrollToElement(el){
+ if(!el)return;
+ const navH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'))||112;
+ const rect=el.getBoundingClientRect();
+ const target=rect.top+window.scrollY-navH-20;
+ window.scrollTo({top:Math.max(0,target),behavior:TL.A11y.motion?'smooth':'auto'});
+}
+
+function nextStep(){
+ Tour.completed.add(Tour.steps[Tour.step].id);
+ Tour.step++;
+ if(Tour.step>=Tour.steps.length){
+  showCompletion();
+ } else {
+  renderStep();
+ }
+}
+
+function prevStep(){
+ if(Tour.step>0){
+  Tour.step--;
+  renderStep();
+ }
+}
+
+function exitTour(){
+ Tour.active=false;
+ hideTourUI();
+ TL.toast('Visita guiada encerrada. Você pode reiniciá-la clicando no botão de ajuda.','info',3000);
+}
+
+function hideTourUI(){
+ if(Tour.overlay)Tour.overlay.style.display='none';
+ if(Tour.tooltip)Tour.tooltip.style.display='none';
+ if(Tour.highlight)Tour.highlight.style.display='none';
+ if(Tour.progressBar)Tour.progressBar.style.display='none';
+}
+
+function showCompletion(){
+ hideTourUI();
+ 
+ if(Tour.completionModal)return;
+ Tour.completionModal=document.createElement('div');
+ Tour.completionModal.id='tour-completion-modal';
+ 
+ const tabsCount=Tour.metrics.tabsVisited.size;
+ const experiments=Tour.metrics.experiments;
+ const challenges=Tour.metrics.challengesCompleted;
+ 
+ Tour.completionModal.innerHTML=`
+  <div class="tour-completion-content">
+    <h2>🎉 Você explorou a energia!</h2>
+    <p>Pronto! Agora você já conhece os principais conceitos, sabe utilizar nossas ferramentas e viu como a Física pode ser aplicada em situações reais.</p>
+    <p>Mas lembre-se: a melhor maneira de aprender ciência é continuar experimentando!</p>
+    
+    <div class="tour-metrics">
+      <div class="metric">
+        <div class="metric-value">${tabsCount}/7</div>
+        <div class="metric-label">Abas exploradas</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">${experiments}</div>
+        <div class="metric-label">Experimentos realizados</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">${challenges}</div>
+        <div class="metric-label">Desafios concluídos</div>
+      </div>
+    </div>
+    
+    <div class="tour-completion-buttons">
+      <button type="button" class="btn heat" id="tour-restart">↻ Explorar novamente</button>
+      <button type="button" class="btn ghost" id="tour-home">Voltar ao início</button>
+      <button type="button" class="btn coolb" id="tour-continue">Continuar explorando</button>
+    </div>
+  </div>
+ `;
+ document.body.appendChild(Tour.completionModal);
+ 
+ Tour.completionModal.querySelector('#tour-restart').addEventListener('click',()=>{
+  Tour.completionModal.remove();
+  Tour.completionModal=null;
+  startTour();
+ });
+ 
+ Tour.completionModal.querySelector('#tour-home').addEventListener('click',()=>{
+  Tour.completionModal.remove();
+  Tour.completionModal=null;
+  TL.App.go('inicio');
+ });
+ 
+ Tour.completionModal.querySelector('#tour-continue').addEventListener('click',()=>{
+  Tour.completionModal.remove();
+  Tour.completionModal=null;
+  Tour.active=false;
+ });
+}
+
+/* ---------- monitoramento de ações ---------- */
+function trackAction(actionId){
+ if(!Tour.active)return;
+ const currentStep=Tour.steps[Tour.step];
+ if(currentStep&&currentStep.action===actionId){
+  Tour.actions[currentStep.id]=true;
+  Tour.metrics.experiments++;
+  
+  // Habilitar botão próximo
+  if(Tour.tooltip){
+   const nextBtn=Tour.tooltip.querySelector('#tour-next');
+   if(nextBtn){
+    nextBtn.disabled=false;
+    nextBtn.textContent='Próximo →';
+   }
+  }
+  
+  TL.toast('Ação completada! Clique em "Próximo" para continuar.','ok',2000);
+ }
+}
+
+/* ---------- setup de listeners ---------- */
+function setupListeners(){
+ // Monitorar interação com espectro
+ document.addEventListener('click',e=>{
+  if(!Tour.active)return;
+  
+  // Espectro
+  if(e.target.closest('.sp-band')||e.target.closest('[data-band]')){
+   trackAction('spectrum-interaction');
+  }
+  
+  // Mecanismos de transferência
+  if(e.target.closest('#me-rad')||e.target.closest('#me-con')||e.target.closest('#me-cnv')){
+   trackAction('mechanism-click');
+  }
+  
+  // Diagrama CEP
+  if(e.target.closest('.hotspot')||e.target.closest('[data-part]')){
+   trackAction('diagram-interaction');
+  }
+  
+  // Calculadora
+  if(e.target.closest('#lab-a-in input')){
+   trackAction('calculator-input');
+  }
+  
+  // Simulador - ligar aquecimento
+  if(e.target.closest('#pool-play')||e.target.closest('[data-action="heater"]')){
+   trackAction('heater-on');
+  }
+  
+  // Comparação de cenários
+  if(e.target.closest('#sc-chips button')||e.target.closest('#pool-compare')){
+   trackAction('scenario-compare');
+  }
+  
+  // Quiz
+  if(e.target.closest('.qz-opt')){
+   trackAction('quiz-answer');
+  }
+ });
+ 
+ // Monitorar mudanças nos inputs da calculadora
+ const labInputs=document.querySelectorAll('#lab-a-in input');
+ labInputs.forEach(input=>{
+  input.addEventListener('change',()=>trackAction('calculator-input'));
+  input.addEventListener('input',()=>{
+   setTimeout(()=>trackAction('calculator-input'),500);
+  });
+ });
+}
+
+/* ---------- botão de iniciar visita ---------- */
+function initTourButton(){
+ // Criar botão na tela inicial
+ const heroSection=document.querySelector('#panel-inicio');
+ if(heroSection){
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.className='btn heat tour-start-btn';
+  btn.id='tour-start-btn';
+  btn.innerHTML='<svg class="ic"><use href="assets/icons/icons.svg#i-play"></use></svg> INICIAR VISITA GUIADA';
+  
+  // Inserir após o título principal
+  const title=heroSection.querySelector('h1,h2');
+  if(title){
+   title.insertAdjacentElement('afterend',btn);
+  } else {
+   heroSection.insertBefore(btn,heroSection.firstChild);
+  }
+  
+  btn.addEventListener('click',()=>{
+   TL.Sound.play('click');
+   showIntro();
+  });
+ }
+ 
+ // Criar ícone de ajuda flutuante
+ const helpBtn=document.createElement('button');
+ helpBtn.type='button';
+ helpBtn.className='tour-help-btn';
+ helpBtn.id='tour-help-btn';
+ helpBtn.setAttribute('aria-label','Iniciar visita guiada');
+ helpBtn.innerHTML='<svg class="ic"><use href="assets/icons/icons.svg#i-help"></use></svg>';
+ document.body.appendChild(helpBtn);
+ 
+ helpBtn.addEventListener('click',()=>{
+  TL.Sound.play('click');
+  if(Tour.active){
+   exitTour();
+  } else {
+   showIntro();
+  }
+ });
+}
+
+/* ---------- inicialização ---------- */
+function init(){
+ setupListeners();
+ initTourButton();
+ 
+ // Verificar se é primeira visita
+ if(!TL.P.d.tourCompleted){
+  setTimeout(()=>{
+   showIntro();
+  },2000);
+ }
+}
+
+// Exportar funções públicas
+window.Tour=Tour;
+window.startTour=startTour;
+window.exitTour=exitTour;
+
+// Inicializar quando DOM estiver pronto
+if(document.readyState==='loading'){
+ document.addEventListener('DOMContentLoaded',init);
+} else {
+ init();
+}
+
+})();
