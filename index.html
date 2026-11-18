@@ -1336,4 +1336,203 @@ class LineChart{
  setSeries(id,name,color,pts,dash){const s=this.series(id);s.name=name;s.color=color;s.points=pts;if(dash!==undefined)s.dash=dash;this.buildLegend();this.schedule()}
  addPoint(id,x,y){const s=this.series(id);s.points.push([x,y]);if(s.points.length>1400)s.points.splice(0,200);this.schedule()}
  clearAll(keepLive){this.o.series=this.o.series.filter(s=>keepLive&&s.id==='live');this.buildLegend();this.schedule()}
- buildLegend(){this.
+ buildLegend(){this.leg.innerHTML='';this.o.series.forEach(s=>{const b=document.createElement('button');b.type='button';b.className='lg';b.setAttribute('aria-pressed',String(!this.hidden.has(s.id)));
+  b.innerHTML='<i style="background:'+s.color+'"></i>'+esc(s.name);b.setAttribute('aria-label','Alternar série '+s.name);
+  b.addEventListener('click',()=>{this.hidden.has(s.id)?this.hidden.delete(s.id):this.hidden.add(s.id);b.setAttribute('aria-pressed',String(!this.hidden.has(s.id)));Sound.play('click');this.draw()});
+  this.leg.appendChild(b)})}
+ fit(){const r=this.host.getBoundingClientRect();if(r.width<40)return;const dpr=Math.min(2,window.devicePixelRatio||1);
+  this.w=r.width;this.h=this.o.height||clamp(r.width*.42,190,300);
+  this.cv.width=Math.round(this.w*dpr);this.cv.height=Math.round(this.h*dpr);this.cv.style.height=this.h+'px';
+  this.ctx.setTransform(dpr,0,0,dpr,0,0);this.draw()}
+ schedule(){if(this._raf)return;this._raf=true;requestAnimationFrame(()=>{this._raf=false;this.draw()})}
+ draw(){if(!this.w||this.w<40)return;const c=this.ctx,w=this.w,h=this.h,pad={l:48,r:14,t:14,b:28};
+  c.clearRect(0,0,w,h);
+  const vis=this.o.series.filter(s=>!this.hidden.has(s.id)&&s.points.length);
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  vis.forEach(s=>s.points.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}));
+  this.o.bands.forEach(b=>{y0=Math.min(y0,b.y0);y1=Math.max(y1,b.y1)});
+  if(this.o.yMin!==undefined)y0=Math.min(y0,this.o.yMin);if(this.o.yMax!==undefined)y1=Math.max(y1,this.o.yMax);
+  if(!Number.isFinite(x0)){c.fillStyle=Pal.faint;c.font='12px IBM Plex Mono,monospace';c.textAlign='center';c.fillText(this.o.empty,w/2,h/2);this.tip.style.display='none';return}
+  if(x1-x0<1e-9)x1=x0+1;if(y1-y0<1e-9){y0-=1;y1+=1}
+  const yp=(y1-y0)*.1;y0-=yp;y1+=yp;
+  const X=v=>pad.l+(v-x0)/(x1-x0)*(w-pad.l-pad.r), Y=v=>h-pad.b-(v-y0)/(y1-y0)*(h-pad.t-pad.b);
+  const grid=Pal.hc?'rgba(255,255,255,.3)':'rgba(125,185,255,.12)';
+  const nice=(a,b,n)=>{const raw=(b-a)/n,mag=Math.pow(10,Math.floor(Math.log10(raw))),nm=raw/mag;return (nm<1.5?1:nm<3.5?2:nm<7.5?5:10)*mag};
+  c.font='10px IBM Plex Mono,monospace';c.textAlign='right';c.textBaseline='middle';
+  const ys=nice(y0,y1,5);for(let v=Math.ceil(y0/ys)*ys;v<=y1;v+=ys){c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(pad.l,Y(v));c.lineTo(w-pad.r,Y(v));c.stroke();c.fillStyle=Pal.dim;c.fillText(this.o.fmtY(v),pad.l-6,Y(v))}
+  const xs=nice(x0,x1,6);c.textAlign='center';c.textBaseline='top';
+  for(let v=Math.ceil(x0/xs)*xs;v<=x1;v+=xs){c.strokeStyle=grid;c.beginPath();c.moveTo(X(v),pad.t);c.lineTo(X(v),h-pad.b);c.stroke();c.fillStyle=Pal.dim;c.fillText(this.o.fmtX(v),X(v),h-pad.b+6)}
+  this.o.bands.forEach(b=>{c.fillStyle=b.color;c.fillRect(pad.l,Y(b.y1),w-pad.l-pad.r,Y(b.y0)-Y(b.y1));
+   if(b.label){c.fillStyle=Pal.dim;c.textAlign='left';c.textBaseline='bottom';c.fillText(b.label,pad.l+6,Y(b.y1)-3)}});
+  vis.forEach(s=>{c.save();c.strokeStyle=s.color;c.lineWidth=2.4;if(s.dash)c.setLineDash(s.dash);
+   c.shadowColor=s.color;c.shadowBlur=Pal.hc?0:6;c.beginPath();
+   s.points.forEach((p,i)=>{const x=X(p[0]),y=Y(p[1]);i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();
+   if(s.area&&s.points.length>1){c.shadowBlur=0;c.lineTo(X(s.points[s.points.length-1][0]),h-pad.b);c.lineTo(X(s.points[0][0]),h-pad.b);c.closePath();
+    const g=c.createLinearGradient(0,pad.t,0,h-pad.b);g.addColorStop(0,s.color+'44');g.addColorStop(1,s.color+'00');c.fillStyle=g;c.fill()}
+   c.restore()});
+  if(this.hover&&this.hover.x>=pad.l&&this.hover.x<=w-pad.r){
+   const xv=x0+(this.hover.x-pad.l)/(w-pad.l-pad.r)*(x1-x0);
+   c.strokeStyle=Pal.hc?'#fff':'rgba(255,196,77,.6)';c.setLineDash([4,4]);c.lineWidth=1;c.beginPath();c.moveTo(this.hover.x,pad.t);c.lineTo(this.hover.x,h-pad.b);c.stroke();c.setLineDash([]);
+   let html='<div class="tx">'+this.o.fmtX(xv)+'</div>';let any=false;
+   vis.forEach(s=>{let best=null,bd=Infinity;s.points.forEach(p=>{const d=Math.abs(p[0]-xv);if(d<bd){bd=d;best=p}});
+    if(best){any=true;html+='<div class="tr"><i style="background:'+s.color+'"></i>'+esc(s.name)+': <b>'+this.o.fmtY(best[1])+'</b></div>';
+     c.fillStyle=s.color;c.beginPath();c.arc(X(best[0]),Y(best[1]),4,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=1.4;c.stroke()}});
+   if(any){this.tip.innerHTML=html;this.tip.style.display='block';
+    const tw=this.tip.offsetWidth;this.tip.style.left=clamp(this.hover.x+14,4,w-tw-4)+'px';this.tip.style.top='10px';}
+  } else this.tip.style.display='none';
+ }
+}
+const Charts=[];
+
+/* ---------- física compartilhada ---------- */
+const Phys={CW:4186,RHO:1000,PATM:91000,
+ pSat:T=>610.94*Math.exp(17.625*T/(T+243.04)),
+ wRatio:pv=>.622*pv/(Phys.PATM-pv),
+ losses(o){const F=o.cover||0;
+  const ws=Phys.wRatio(Phys.pSat(o.Tw)),wa=Phys.wRatio(clamp(o.rh,1,100)/100*Phys.pSat(o.Tair));
+  const dp=Math.max(0,(Phys.pSat(o.Tw)-clamp(o.rh,1,100)/100*Phys.pSat(o.Tair))/1000);
+  const evapKgH=o.area*(0.065+0.052*o.wind)*dp*(1-.92*F);
+  const evap=evapKgH/3600*2.45e6;
+  const conv=(5.7+3.8*o.wind)*o.area*(o.Tw-o.Tair)*(1-.75*F);
+  const Tsky=o.Tair+273.15-(o.night?16:10);
+  const rad=.96*SIGMA*o.area*(Math.pow(o.Tw+273.15,4)-Math.pow(Tsky,4))*(1-.75*F);
+  const cond=(o.insulated?.6:2.2)*(o.wallArea||o.area*.35)*(o.Tw-18);
+  return {evap,conv,rad,cond,total:evap+conv+rad+cond,evapKgH};}
+};
+class PoolSim{
+ constructor(cfg){this.cfg=cfg;this.reset()}
+ reset(){const c=this.cfg;this.Tw=c.T0;this.t=0;this.kWhel=0;this.kWhth=0;this.heaterActive=true;this.coverF=c.cover?1:0;
+  this.hist=[[0,c.T0]];this.lastRec=0;this.lastL=Phys.losses(this.env());this.lastIn={th:0,el:0};this.prevT=c.T0;this.prevTt=0;this.done=false;}
+ env(){const c=this.cfg;let night=c.night;
+  if(c.period==='cycle'){const clock=(8+this.t/3600)%24;night=clock>=18||clock<6;}
+  return {Tw:this.Tw,Tair:c.Tair,wind:c.wind,rh:c.rh,area:c.area,wallArea:c.wallArea,cover:this.coverF,insulated:c.insulated,night};}
+ clock(){return (8+this.t/3600)%24}
+ isNight(){const c=this.cfg;return c.period==='cycle'?(()=>{const k=this.clock();return k>=18||k<6})():c.period==='night'}
+ geomF(d){return 1/(1+Math.pow(d/1.1,2))}
+ power(){const c=this.cfg;if(!c.on||!this.heaterActive||c.source==='none')return{th:0,el:0};
+  if(c.source==='ir')return{th:c.P*1000*.95*this.geomF(c.dist)*.95*(1-.9*this.coverF),el:c.P*1000};
+  if(c.source==='hp'){const cop=Math.max(2.1,4.9-.085*(27-c.Tair));return{th:c.P*1000*cop,el:c.P*1000,cop}}
+  if(c.source==='solar'){const k=this.clock();const G=this.isNight()?0:700*Math.max(0,Math.sin(Math.PI*(k-6)/12));
+   return{th:G*c.areaCol*.55*(1-.85*this.coverF),el:400,G}}
+  return{th:0,el:0};}
+ step(dt){const c=this.cfg;
+  if(this.Tw>=c.target)this.heaterActive=false;else if(this.Tw<=c.target-.5)this.heaterActive=true;
+  const inp=this.power(),L=Phys.losses(this.env());
+  this.Tw=clamp(this.Tw+(inp.th-L.total)*dt/(c.m*Phys.CW),-2,45);
+  this.t+=dt;this.kWhel+=inp.el*dt/3.6e6;this.kWhth+=inp.th*dt/3.6e6;
+  this.lastL=L;this.lastIn=inp;
+  if(this.t-this.lastRec>=900){this.hist.push([this.t/3600,this.Tw]);this.lastRec=this.t;if(this.hist.length>1200)this.hist.splice(0,200)}
+  if(this.t>=96*3600)this.done=true;}
+ run(hours,stepSec){const n=Math.round(hours*3600/stepSec);for(let i=0;i<n;i++)this.step(stepSec);return this.hist}
+}
+
+/* =====================================================================
+   MÓDULOS
+   ===================================================================== */
+const TABS=[
+ ['infravermelho','Infravermelho','ir','var(--orange)'],
+ ['aquecimento','Aquecimento','flame','var(--amber)'],
+ ['cep','No CEP','school','var(--blue)'],
+ ['laboratorio','Laboratório','flask','var(--teal)'],
+ ['simulador','Simulador','pool','var(--cyan)'],
+ ['acessibilidade','Acessibilidade','access','var(--violet)'],
+ ['quiz','Quiz','quiz','var(--magenta)'],
+ ['conclusao','Conclusão','flag','var(--green)']];
+const App={tab:null,visited:new Set(),
+ go(id,scroll=true){if(!TABS.some(t=>t[0]===id))id='infravermelho';
+  App.tab=id;App.visited.add(id);P.d.visited=[...App.visited];saveSoon();
+  TABS.forEach(([tid])=>{const p=el('panel-'+tid),b=el('tab-'+tid);
+   p.hidden=tid!==id;b.setAttribute('aria-selected',String(tid===id));b.tabIndex=tid===id?0:-1;});
+  history.replaceState(null,'','#'+id);
+  Engine.list.forEach(v=>{if(v.tab===id){fitCanvas(v.el);v.dirty=true}});
+  Charts.forEach(ch=>{if(ch.tab===id)ch.chart.fit()});
+  const panel=el('panel-'+id);
+  if(A11y.motion){panel.querySelectorAll('.reveal').forEach(x=>{revealIO.unobserve(x);x.classList.remove('in');revealIO.observe(x)})}
+  else panel.querySelectorAll('.reveal').forEach(x=>x.classList.add('in'));
+  Bus.emit('tab',id);updateJourney();
+  if(scroll){const y=el('painéis').getBoundingClientRect().top+window.scrollY-parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'))+2;
+   if(window.scrollY>y-4||window.scrollY<el('hero').offsetHeight*.4)window.scrollTo({top:Math.max(0,y),behavior:A11y.motion?'smooth':'auto'});}
+  Sound.play('tab');}
+};
+const revealIO=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)en.target.classList.add('in')}),{threshold:.1});
+function measureNav(){const h=el('topbar').offsetHeight;document.documentElement.style.setProperty('--nav-h',h+'px')}
+
+/* ---------- HERO ---------- */
+function initHero(){
+ const cv=el('hero-cv');const parts=[];const phot=[];
+ for(let i=0;i<70;i++)parts.push({x:Math.random(),y:Math.random(),s:.4+Math.random()*1.2,v:.02+Math.random()*.05});
+ for(let i=0;i<26;i++)phot.push({p:Math.random(),b:i%3});
+ Engine.add({el:cv,tab:null,draw(dt,t){if(!fitCanvas(cv)&&!cv._w)return;const c=cv._ctx,W=cv._w,Hh=cv._h;
+  c.clearRect(0,0,W,Hh);
+  const horizon=Hh*.52;
+  // céu: pontos de luz
+  c.fillStyle=Pal.hc?'rgba(255,255,255,.5)':'rgba(125,185,255,.35)';
+  parts.forEach(p=>{p.y-=p.v*dt;if(p.y<0)p.y=1;c.globalAlpha=.25+.35*Math.sin(t*p.s*2+p.x*9);c.beginPath();c.arc(p.x*W,p.y*horizon,p.s,0,7);c.fill()});
+  c.globalAlpha=1;
+  // água em perspectiva
+  const rows=13;
+  for(let r=0;r<rows;r++){const f=r/(rows-1),y=horizon+Math.pow(f,1.7)*(Hh-horizon);
+   const amp=2+f*9,al=.06+f*.3;
+   c.strokeStyle=Pal.hc?'rgba(126,240,255,'+(al+.2)+')':'rgba(56,180,255,'+al+')';c.lineWidth=1+f*1.4;c.beginPath();
+   for(let x=0;x<=W;x+=14){const yy=y+Math.sin(x*.014+t*(0.7+f)+r*1.7)*amp;x?c.lineTo(x,yy):c.moveTo(x,yy)}c.stroke();}
+  // feixes IR do canto superior direito
+  const src={x:W*.86,y:-30};
+  for(let b=0;b<3;b++){const tx=W*(.42+b*.16),ty=horizon+Hh*.14;
+   const g=c.createLinearGradient(src.x,src.y,tx,ty);g.addColorStop(0,'rgba(255,122,28,0)');g.addColorStop(.5,'rgba(255,140,40,'+(Pal.hc?.3:.16)+')');g.addColorStop(1,'rgba(255,176,32,0)');
+   c.fillStyle=g;c.beginPath();c.moveTo(src.x+b*14,src.y);c.lineTo(src.x+b*14+26,src.y);c.lineTo(tx+52,ty);c.lineTo(tx-52,ty);c.closePath();c.fill();
+   // brilhos de absorção
+   const gg=c.createRadialGradient(tx,ty,0,tx,ty,60);gg.addColorStop(0,'rgba(255,150,50,'+(.22+.1*Math.sin(t*2+b))+')');gg.addColorStop(1,'rgba(255,150,50,0)');
+   c.fillStyle=gg;c.beginPath();c.arc(tx,ty,60,0,7);c.fill();}
+  // fótons descendo pelos feixes
+  phot.forEach(p=>{p.p+=dt*.35;if(p.p>1)p.p=0;const tx=W*(.42+p.b*.16),ty=horizon+Hh*.14;
+   const x=lerp(src.x+p.b*14+13,tx,p.p),y=lerp(src.y,ty,p.p);
+   c.fillStyle='rgba(255,190,80,'+(1-p.p)*.8+')';c.beginPath();c.arc(x,y,2.2,0,7);c.fill();});
+  // emissor
+  c.save();c.shadowColor='#ff7a1c';c.shadowBlur=24;c.fillStyle='#ff7a1c';
+  c.fillRect(src.x-10,6,110,10);c.restore();
+ }});
+}
+
+/* ---------- espectro ---------- */
+const SP={lam:9.35e-6};
+const BANDS=[
+ {id:'radio',n:'Ondas de rádio',lo:1e3,hi:1,g:['#0e2f5e','#1d5fa8'],ico:'sensor',d:'As ondas mais longas: contornam montanhas e prédios. Carregam informação por modulação de amplitude ou frequência.',apps:['Rádio AM/FM','TV aberta','Radioastronomia'],fact:'Uma onda de rádio FM (~3 m) é 3 milhões de vezes mais longa que o infravermelho de um controle remoto.'},
+ {id:'micro',n:'Micro-ondas',lo:1,hi:1e-3,g:['#1d5fa8','#4f6fd4'],ico:'sensor',d:'Comprimentos de onda de 1 m a 1 mm. Fazem moléculas de água rotacionar — por isso o forno de micro-ondas aquece comida.',apps:['Forno (12 cm)','Wi-Fi (12 cm)','Radar','Satélites'],fact:'Wi-Fi e forno de micro-ondas usam quase a mesma frequência (2,4 GHz) — mas potências muito diferentes!'},
+ {id:'ir',n:'Infravermelho',lo:1e-3,hi:7.5e-7,g:['#b3231f','#ff8a3d'],ico:'ir',d:'A faixa do calor radiante. Todo corpo em temperatura ambiente emite seu pico aqui. Subdivide-se em próximo, médio, termal e distante.',apps:['Controle remoto (940 nm)','Câmera térmica (8–14 µm)','Aquecedores','Fibra óptica (1,55 µm)'],fact:'Você emite ≈ 100 W de infravermelho — como uma lâmpada antiga, só que invisível.'},
+ {id:'vis',n:'Luz visível',lo:7.5e-7,hi:3.8e-7,g:['#ff4b2e','#3ddc97','#8f7bff'],ico:'eye',d:'A estreita janela que a evolução escolheu para nossos olhos — coincidindo com o pico de emissão do Sol.',apps:['Visão','Fotografia','Iluminação','Lasers'],fact:'É menos de 0,001% da extensão do espectro mostrado aqui — uma fresta entre IR e UV.'},
+ {id:'uv',n:'Ultravioleta',lo:3.8e-7,hi:1e-8,g:['#8f7bff','#5b3fd4'],ico:'sun',d:'Fótons energéticos: bronzeiam, esterilizam e, em excesso, lesionam o DNA. A camada de ozônio filtra o UV mais duro.',apps:['Esterilização UV-C','Vitamina D','Luz negra','Fotolitografia'],fact:'Abelhas enxergam UV e veem “pistas de pouso” invisíveis nas flores.'},
+ {id:'x',n:'Raios X',lo:1e-8,hi:1e-11,g:['#38b0d8','#7ef0ff'],ico:'shield',d:'Atravessam tecidos moles, mas são barrados por ossos e metais — a base da radiografia.',apps:['Radiografia','Tomografia','Segurança de aeroportos','Cristalografia'],fact:'A cristalografia de raios X revelou a estrutura do DNA em 1953.'},
+ {id:'gama',n:'Raios gama',lo:1e-11,hi:1e-13,g:['#d43fb0','#ff4fa3'],ico:'bolt',d:'Os fótons mais energéticos, nascidos em núcleos atômicos e explosões cósmicas. Ionizam profundamente.',apps:['Radioterapia','Esterilização industrial','Astrofísica','PET scan'],fact:'Um único fóton gama pode ter mais energia que um trilhão de fótons de rádio.'}];
+const IRSUBS=[
+ {id:'nir',n:'IR próximo (NIR)',lo:1.4e-6,hi:7.5e-7,g:['#ff8a5c','#ff9a3d'],ico:'remote',d:'O vizinho imediato do vermelho. Penetra alguns milímetros na pele e dezenas de centímetros na água.',apps:['Controle remoto (940 nm)','Fibra óptica','Visão noturna ativa','Oximetria'],fact:'A câmera do celular enxerga o LED do controle remoto — teste apontando e apertando um botão!'},
+ {id:'mir',n:'IR médio (MWIR)',lo:3e-6,hi:1.4e-6,g:['#ff6a3d','#f0552e'],ico:'heater',d:'Faixa dos aquecedores de quartzo e dos sensores de chama. Objetos a centenas de °C brilham intensamente aqui.',apps:['Aquecedores de quartzo','Sensores de chama','Espectroscopia de gases'],fact:'Um aquecedor de quartzo a ~800 °C tem pico de emissão em ≈ 2,7 µm.'},
+ {id:'tir',n:'IR termal (LWIR)',lo:15e-6,hi:3e-6,g:['#e8452e','#c9301f'],ico:'camera',d:'A janela das câmeras térmicas (8–14 µm): corpos em temperatura ambiente — pessoas, paredes, água — emitem seu pico aqui.',apps:['Câmeras térmicas','Sensor PIR de presença','Termômetros sem contato','Diagnóstico de isolamento'],fact:'O corpo humano (310 K) tem pico em 9,35 µm — bem no centro desta faixa.'},
+ {id:'fir',n:'IR distante (FIR)',lo:1e-3,hi:15e-6,g:['#b3231f','#8a1a16'],ico:'wave',d:'Quase micro-ondas. Emissores cerâmicos de baixa temperatura irradiam aqui; a água absorve tudo em frações de milímetro.',apps:['Aquecedores cerâmicos','Painéis radiantes','Astronomia de objetos frios'],fact:'É a faixa mais absorvida pela água — aquecimento direto vira aquecimento de superfície.'}];
+function spX(l){return (3-Math.log10(l))/16*100}
+function initSpectrum(){
+ const main=el('sp-main'),zoom=el('sp-zoom');
+ BANDS.forEach(b=>{const span=Math.log10(b.lo/b.hi);const btn=document.createElement('button');btn.type='button';
+  btn.className='sp-band'+(b.id==='ir'?' irband':'');btn.style.width=(span/16*100)+'%';
+  btn.style.background='linear-gradient(90deg,'+b.g.join(',')+')';btn.dataset.band=b.id;
+  btn.setAttribute('aria-pressed','false');btn.setAttribute('aria-label',b.n+': comprimento de onda de '+fmtWave(b.hi)+' a '+fmtWave(b.lo));
+  btn.innerHTML='<span>'+({vis:'👁',x:'X',gama:'γ'}[b.id]||b.n.split(' ')[0])+'</span>';
+  btn.addEventListener('click',()=>{SP.lam=Math.sqrt(b.lo*b.hi);Sound.play('click');spUpdate(true)});main.appendChild(btn);});
+ const scale=el('sp-scale');[[1e3,'1 km'],[1,'1 m'],[1e-3,'1 mm'],[7.5e-7,'700 nm'],[3.8e-7,'400 nm'],[1e-8,'10 nm'],[1e-11,'10 pm']].forEach(([l,lb])=>{const s=document.createElement('span');s.style.left=clamp(spX(l),2,98)+'%';s.textContent=lb;scale.appendChild(s)});
+ const mk=document.createElement('div');mk.className='sp-marker';mk.id='sp-mk';main.appendChild(mk);
+ IRSUBS.forEach(b=>{const span=Math.log10(b.lo/b.hi);const btn=document.createElement('button');btn.type='button';btn.className='sp-band';
+  btn.style.width=(span/3.125*100)+'%';btn.style.background='linear-gradient(90deg,'+b.g.join(',')+')';btn.dataset.band=b.id;
+  btn.setAttribute('aria-pressed','false');btn.setAttribute('aria-label',b.n+': '+fmtWave(b.hi)+' a '+fmtWave(b.lo));
+  btn.innerHTML='<span>'+b.n.split(' (')[0].replace('Infravermelho','IR')+'</span>';
+  btn.addEventListener('click',()=>{SP.lam=Math.sqrt(b.lo*b.hi);Sound.play('click');spUpdate(true)});zoom.appendChild(btn);});
+ const mk2=document.createElement('div');mk2.className='sp-marker';mk2.id='sp-mk2';zoom.appendChild(mk2);
+ SP.slider=makeRange(el('sp-slider'),{label:'Régua de comprimento de onda (escala log)',min:0,max:1000,step:1,val:Math.round((3-Math.log10(9.35e-6))/16*1000),fmt:v=>fmtWave(Math.pow(10,3-16*v/1000)),color:'var(--orange)',oninput:v=>{SP.lam=Math.pow(10,3-16*v/1000);spUpdate(false)}});
+ statGrid(el('sp-read'),[{id:'sp-l',label:'comprimento de onda λ',kind:'hot'},{id:'sp-f',label:'frequência f = c/λ'},{id:'sp-e',label:'energia do fóton E = h·f',kind:'vio'},{id:'sp-b',label:'faixa',kind:'ok'}]);
+ spUpdate(true);
+}
+function spUpdate(moveSlider){
+ const l=SP.lam,f=C0/l,E=4.135667696e-15*f;
+ const band=BANDS.find(b=>l<=b.lo&&l>=b.hi)||BANDS[0];
+ const sub=IRSUBS.find(b=>l<=b.lo&&l>=b.hi);
+ const show=sub||band;
+ setTxt('sp-l',fmtWave(l));setTxt('sp-f',fmtFreq(f));setTxt('sp-e',fmtEv(E));setTxt('sp-b',show.n);
+ el('sp-mk').style.left=clamp(spX(l),
